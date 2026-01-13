@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { activitiesStorage } from '../../data/storage';
 import { GOVERNORATES } from '../../data/constants';
@@ -10,6 +10,7 @@ import { IoArrowBack } from 'react-icons/io5';
 
 const ActivityView = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { user, isSupervisor } = useAuth();
   const activity = useMemo(() => activitiesStorage.getAll().find((a) => a.id === id) || null, [id]);
 
@@ -43,9 +44,9 @@ const ActivityView = () => {
   return (
     <div className="space-y-6" dir="rtl">
       <div className="flex items-center gap-4">
-        <Link to={`${basePath}/activities`}>
+        <button onClick={() => navigate(-1)} className="cursor-pointer">
           <IoArrowBack size={24} className="text-[#211551]" />
-        </Link>
+        </button>
         <div>
           <h1 className="text-3xl font-bold text-[#211551] mb-2">عرض النشاط (قراءة فقط)</h1>
           <p className="text-gray-600">تفاصيل النشاط كما تم تسجيلها</p>

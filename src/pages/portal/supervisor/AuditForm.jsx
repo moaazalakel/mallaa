@@ -97,9 +97,9 @@ const AuditForm = () => {
   return (
     <div className="space-y-6" dir="rtl">
       <div className="flex items-center gap-4">
-        <Link to="/portal/supervisor/dashboard">
+        <button onClick={() => navigate(-1)} className="cursor-pointer">
           <IoArrowBack size={24} className="text-[#211551]" />
-        </Link>
+        </button>
         <div>
           <h1 className="text-3xl font-bold text-[#211551] mb-2">لوحة تدقيق جودة أداء أخصائي التشخيص</h1>
           <p className="text-gray-600">
@@ -274,9 +274,7 @@ const AuditForm = () => {
         </Card>
 
         <div className="flex gap-4 justify-end">
-          <Link to="/portal/supervisor/dashboard">
-            <Button type="button" variant="outline">إلغاء</Button>
-          </Link>
+          <Button type="button" variant="outline" onClick={() => navigate(-1)}>إلغاء</Button>
           <Button type="submit" variant="primary" disabled={loading}>
             {loading ? 'جاري الحفظ...' : 'حفظ وإرسال قرار التدقيق'}
           </Button>

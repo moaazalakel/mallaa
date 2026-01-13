@@ -9,7 +9,6 @@ import DatePicker from '../../../components/ui/DatePicker';
 import Button from '../../../components/ui/Button';
 import Card from '../../../components/ui/Card';
 import { IoArrowBack } from 'react-icons/io5';
-import { Link } from 'react-router-dom';
 
 const NewCase = () => {
   const { user } = useAuth();
@@ -98,9 +97,9 @@ const NewCase = () => {
   return (
     <div className="space-y-6" dir="rtl">
       <div className="flex items-center gap-4">
-        <Link to="/portal/specialist/cases">
+        <button onClick={() => navigate(-1)} className="cursor-pointer">
           <IoArrowBack size={24} className="text-[#211551]" />
-        </Link>
+        </button>
         <div>
           <h1 className="text-3xl font-bold text-[#211551] mb-2">تسجيل حالة جديدة</h1>
           <p className="text-gray-600">نموذج تسجيل حالة طالب جديدة في منظومة ملاءة</p>
@@ -237,9 +236,7 @@ const NewCase = () => {
           </div>
 
           <div className="flex gap-4 justify-end">
-            <Link to="/portal/specialist/cases">
-              <Button type="button" variant="outline">إلغاء</Button>
-            </Link>
+            <Button type="button" variant="outline" onClick={() => navigate(-1)}>إلغاء</Button>
             <Button type="submit" variant="primary" disabled={loading}>
               {loading ? 'جاري الحفظ...' : 'تسجيل الحالة'}
             </Button>

@@ -118,9 +118,9 @@ const NewActivity = () => {
   return (
     <div className="space-y-6" dir="rtl">
       <div className="flex items-center gap-4">
-        <Link to={`${basePath}/activities`}>
+        <button onClick={() => navigate(-1)} className="cursor-pointer">
           <IoArrowBack size={24} className="text-[#211551]" />
-        </Link>
+        </button>
         <div>
           <h1 className="text-3xl font-bold text-[#211551] mb-2">{isEdit ? 'تعديل نشاط' : 'إضافة نشاط'}</h1>
           <p className="text-gray-600">{isEdit ? 'تعديل بيانات نشاط موجود' : 'تسجيل نشاط جديد في النظام'}</p>
@@ -169,9 +169,7 @@ const NewActivity = () => {
           </div>
 
           <div className="flex gap-4 justify-end">
-            <Link to={`${basePath}/activities`}>
-              <Button type="button" variant="outline">إلغاء</Button>
-            </Link>
+            <Button type="button" variant="outline" onClick={() => navigate(-1)}>إلغاء</Button>
             <Button type="submit" variant="primary" disabled={loading}>
               {loading ? 'جاري الحفظ...' : isEdit ? 'حفظ التعديل' : 'حفظ النشاط'}
             </Button>

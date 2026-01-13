@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { casesStorage, evaluationsStorage } from '../../../data/storage';
 import { GOVERNORATES } from '../../../data/constants';
 import Card from '../../../components/ui/Card';
@@ -25,6 +25,7 @@ const QASection = ({ title, items = [] }) => {
 
 const SupervisorCaseView = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const caseItem = casesStorage.findById(id);
   const evaluation = evaluationsStorage.findByCaseId(id);
 
@@ -80,9 +81,9 @@ const SupervisorCaseView = () => {
   return (
     <div className="space-y-6" dir="rtl">
       <div className="flex items-center gap-4">
-        <Link to="/portal/supervisor/audit">
+        <button onClick={() => navigate(-1)} className="cursor-pointer">
           <IoArrowBack size={24} className="text-[#211551]" />
-        </Link>
+        </button>
         <div>
           <h1 className="text-3xl font-bold text-[#211551] mb-2">عرض تفاصيل الحالة (قراءة فقط)</h1>
           <p className="text-gray-600">عرض جميع البيانات المُدخلة من الأخصائي دون تعديل</p>

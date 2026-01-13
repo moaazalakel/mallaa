@@ -1,0 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap');
+@import 'tailwindcss';
+html {
+  scroll-behavior: smooth;
+}
+body {
+  direction: rtl;
+  text-align: right;
+  font-family: 'Cairo', sans-serif;
+}
+
+/* Remove the black focus outline Chrome/Edge shows on SVG charts when clicked */
+.recharts-wrapper:focus,
+.recharts-wrapper *:focus,
+svg:focus {
+  outline: none !important;
+}
+
+/* #211551 */

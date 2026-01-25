@@ -21,20 +21,27 @@
       var pathSegmentsToKeep = 1;
 
       var l = window.location;
-      l.replace(
+      var basePath = '/mallaa';
+      var pathname = l.pathname;
+      
+      // Remove the base path from pathname if present
+      if (pathname.startsWith(basePath)) {
+        pathname = pathname.slice(basePath.length);
+      }
+      
+      // Build the redirect URL
+      var redirectUrl = 
         l.protocol +
-          '//' +
-          l.hostname +
-          (l.port ? ':' + l.port : '') +
-          l.pathname
-            .split('/')
-            .slice(0, 1 + pathSegmentsToKeep)
-            .join('/') +
-          '/?/' +
-          l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
-          (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-          l.hash
-      );
+        '//' +
+        l.hostname +
+        (l.port ? ':' + l.port : '') +
+        basePath +
+        '/?/' +
+        pathname.slice(1).replace(/&/g, '~and~') +
+        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+        l.hash;
+      
+      l.replace(redirectUrl);
     </script>
   </head>
   <body></body>

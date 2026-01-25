@@ -9,14 +9,15 @@
       // Single Page Apps for GitHub Pages
       // This script checks if we're coming from a 404 redirect and fixes the URL
       (function() {
-        var pathSegmentsToKeep = 1;
         var l = window.location;
+        var basePath = '/mallaa';
         var redirect = l.search.slice(1).split('&').find(function(s) { return s.indexOf('/') !== -1; });
         if (redirect) {
           var newPath = redirect.split('?')[0].replace(/~and~/g, '&');
           var newSearch = l.search.slice(1).split('&').filter(function(s) { return s.indexOf('/') === -1; }).join('&').replace(/~and~/g, '&');
           if (newPath) {
-            window.history.replaceState(null, null, l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/' + newPath + (newSearch ? '?' + newSearch : '') + l.hash);
+            var fullPath = basePath + '/' + newPath;
+            window.history.replaceState(null, null, fullPath + (newSearch ? '?' + newSearch : '') + l.hash);
           }
         }
       })();

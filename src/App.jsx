@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { seedData } from './data/seedData';
 import Home from './pages/Home';
@@ -31,7 +31,11 @@ import ActivityView from './pages/portal/ActivityView';
 import { ROLES } from './data/constants';
 
 // Initialize seed data on app load
-seedData();
+try {
+  seedData();
+} catch (error) {
+  console.error('Error seeding data:', error);
+}
 
 // Public Layout Wrapper
 const PublicLayout = ({ children }) => (
@@ -60,6 +64,7 @@ function App() {
                   <Route path="cases" element={<CasesList />} />
                   <Route path="cases/new" element={<NewCase />} />
                   <Route path="cases/:id" element={<CaseDetails />} />
+                  <Route path="cases/:id/edit" element={<NewCase />} />
                   <Route path="cases/:id/evaluate" element={<EvaluationForm />} />
                   <Route path="activities" element={<ActivitiesList />} />
                   <Route path="activities/new" element={<NewActivity />} />
@@ -104,6 +109,9 @@ function App() {
         <Route path="/methodology" element={<PublicLayout><Methodology /></PublicLayout>} />
         <Route path="/services" element={<PublicLayout><ServicesAndReports /></PublicLayout>} />
         <Route path="/faq" element={<PublicLayout><FAQPage /></PublicLayout>} />
+        
+        {/* Catch-all route - redirect to home for any unknown routes */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>
   );

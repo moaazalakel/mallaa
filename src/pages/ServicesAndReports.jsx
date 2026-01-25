@@ -3,12 +3,8 @@ import {
   FaChevronDown,
   FaBook,
   FaTools,
-  FaChild,
-  FaProjectDiagram,
   FaQuestionCircle,
   FaChartBar,
-  FaTable,
-  FaDownload,
   FaLayerGroup,
 } from 'react-icons/fa';
 
@@ -59,19 +55,8 @@ const ServicesAndReports = () => {
 - ⁠مقياس المعالجة الحسية 
 - ⁠مقياس فاينلاند للسلوك التكيفي
 - ⁠مقياس pep3 لتقييم التوحد 
-- ⁠استمارات التشخيص
-- ⁠فرق التشخيص اللامركزية`,
+- ⁠استمارات التشخيص`,
             },
-            // {
-            //   title: 'كشف عن الطلبة الموهوبين',
-            //   icon: <FaChild className="text-[#211551] text-2xl" />,
-            //   desc: 'نموذج خاص للكشف المبكر عن الطلبة الموهوبين.',
-            // },
-            // {
-            //   title: 'الخطط الإجرائية (برنامج ثروة)',
-            //   icon: <FaProjectDiagram className="text-[#211551] text-2xl" />,
-            //   desc: 'الخطط الإجرائية الخاصة ببرنامج ثروة لدعم التطوير المستمر.',
-            // },
             {
               title: 'الأسئلة الشائعة',
               icon: <FaQuestionCircle className="text-[#211551] text-2xl" />,

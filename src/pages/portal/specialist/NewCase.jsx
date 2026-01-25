@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { casesStorage, notificationsStorage } from '../../../data/storage';
 import { GOVERNORATES, GENDER, REFERRAL_SOURCES } from '../../../data/constants';
@@ -13,6 +13,8 @@ import { IoArrowBack } from 'react-icons/io5';
 const NewCase = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEdit = Boolean(id);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -29,6 +31,35 @@ const NewCase = () => {
     referralSource: '',
     recommendations: '',
   });
+
+  const existingCase = useMemo(() => {
+    if (!isEdit) return null;
+    return casesStorage.findById(id);
+  }, [isEdit, id]);
+
+  useEffect(() => {
+    if (isEdit && existingCase) {
+      // Check if user has permission to edit this case
+      if (existingCase.governorateId !== user?.governorateId) {
+        navigate('/portal/specialist/cases');
+        return;
+      }
+      // Pre-fill form with existing case data
+      setFormData({
+        studentName: existingCase.studentName || '',
+        gender: existingCase.gender || '',
+        birthDate: existingCase.birthDate || '',
+        governorateId: existingCase.governorateId || user?.governorateId || '',
+        diagnosisDate: existingCase.diagnosisDate || '',
+        civilNumber: existingCase.civilNumber || '',
+        correspondenceNumber: existingCase.correspondenceNumber || '',
+        school: existingCase.school || '',
+        caseDescription: existingCase.caseDescription || '',
+        referralSource: existingCase.referralSource || '',
+        recommendations: existingCase.recommendations || '',
+      });
+    }
+  }, [isEdit, existingCase, user?.governorateId, navigate]);
 
   const calculateAge = (birthDate) => {
     if (!birthDate) return 0;
@@ -73,22 +104,46 @@ const NewCase = () => {
     setLoading(true);
 
     const age = calculateAge(formData.birthDate);
-    const newCase = casesStorage.create({
-      ...formData,
-      age,
-      status: 'قيد التقييم',
-      disabilityType: 'غير مصنف', // Will be updated after evaluation
-      schoolType: 'مدارس حكومية', // Default
-      attachments: { count: 0, required: 7 },
-    });
 
-    // Create notification for supervisor
-    notificationsStorage.create({
-      message: `تم تسجيل حالة جديدة: ${formData.studentName} في ${GOVERNORATES.find((g) => g.id === formData.governorateId)?.name}`,
-      type: 'new_case',
-      caseId: newCase.id,
-      userId: 'user_supervisor', // Supervisor user ID
-    });
+    if (isEdit && existingCase) {
+      // Update existing case
+      casesStorage.update(id, {
+        ...formData,
+        age,
+        // Preserve existing fields that shouldn't be changed
+        status: existingCase.status,
+        disabilityType: existingCase.disabilityType,
+        schoolType: existingCase.schoolType,
+        attachments: existingCase.attachments,
+        createdAt: existingCase.createdAt,
+      });
+
+      // Create notification for supervisor
+      notificationsStorage.create({
+        message: `تم تحديث حالة: ${formData.studentName} في ${GOVERNORATES.find((g) => g.id === formData.governorateId)?.name}`,
+        type: 'case_updated',
+        caseId: id,
+        userId: 'user_supervisor',
+      });
+    } else {
+      // Create new case
+      const newCase = casesStorage.create({
+        ...formData,
+        age,
+        status: 'قيد التقييم',
+        disabilityType: 'أخرى', // Will be updated after evaluation
+        schoolType: 'مدارس حكومية', // Default
+        attachments: { count: 0, required: 7 },
+      });
+
+      // Create notification for supervisor
+      notificationsStorage.create({
+        message: `تم تسجيل حالة جديدة: ${formData.studentName} في ${GOVERNORATES.find((g) => g.id === formData.governorateId)?.name}`,
+        type: 'new_case',
+        caseId: newCase.id,
+        userId: 'user_supervisor', // Supervisor user ID
+      });
+    }
 
     setLoading(false);
     navigate('/portal/specialist/cases');
@@ -101,8 +156,8 @@ const NewCase = () => {
           <IoArrowBack size={24} className="text-[#211551]" />
         </button>
         <div>
-          <h1 className="text-3xl font-bold text-[#211551] mb-2">تسجيل حالة جديدة</h1>
-          <p className="text-gray-600">نموذج تسجيل حالة طالب جديدة في منظومة ملاءة</p>
+          <h1 className="text-3xl font-bold text-[#211551] mb-2">{isEdit ? 'تعديل الحالة' : 'تسجيل حالة جديدة'}</h1>
+          <p className="text-gray-600">{isEdit ? 'تعديل بيانات حالة موجودة' : 'نموذج تسجيل حالة طالب جديدة في منظومة ملاءة'}</p>
         </div>
       </div>
 
@@ -151,13 +206,13 @@ const NewCase = () => {
               error={errors.birthDate}
             />
 
-            <Select
-              label="المنطقة *"
-              value={formData.governorateId}
-              onChange={(e) => handleChange('governorateId', e.target.value)}
-              error={errors.governorateId}
-              options={GOVERNORATES.map((g) => ({ value: g.id, label: g.name }))}
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">المنطقة *</label>
+              <div className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed" dir="rtl">
+                {GOVERNORATES.find((g) => g.id === formData.governorateId)?.name || 'غير محدد'}
+              </div>
+              {errors.governorateId && <p className="mt-1 text-sm text-red-600">{errors.governorateId}</p>}
+            </div>
 
             <DatePicker
               label="تاريخ التشخيص *"
@@ -204,12 +259,14 @@ const NewCase = () => {
             {errors.caseDescription && <p className="mt-1 text-sm text-red-600">{errors.caseDescription}</p>}
           </div>
 
-          <Input
+          <Select
             label="جهة الإحالة *"
             value={formData.referralSource}
             onChange={(e) => handleChange('referralSource', e.target.value)}
             error={errors.referralSource}
-            placeholder="أدخل جهة الإحالة"
+            showEmpty
+            placeholder="اختر جهة الإحالة"
+            options={REFERRAL_SOURCES.map((source) => ({ value: source, label: source }))}
           />
 
           <div>
@@ -238,7 +295,7 @@ const NewCase = () => {
           <div className="flex gap-4 justify-end">
             <Button type="button" variant="outline" onClick={() => navigate(-1)}>إلغاء</Button>
             <Button type="submit" variant="primary" disabled={loading}>
-              {loading ? 'جاري الحفظ...' : 'تسجيل الحالة'}
+              {loading ? 'جاري الحفظ...' : (isEdit ? 'حفظ التعديلات' : 'تسجيل الحالة')}
             </Button>
           </div>
         </form>

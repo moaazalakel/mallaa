@@ -53,16 +53,16 @@ const Dashboard = () => {
 
   // Referral sources distribution (نسبة التوزيع حسب مصدر الإحالة)
   const referralData = useMemo(() => {
+    const allowedSources = ['المدارس', 'دائرة الأشراف التربوي', 'شؤون الطلبة', 'دائرة التوجيه المهني والإرشاد الطلابي'];
     const referralCounts = {};
     cases.forEach((c) => {
-      if (c.referralSource) {
+      if (c.referralSource && allowedSources.includes(c.referralSource)) {
         referralCounts[c.referralSource] = (referralCounts[c.referralSource] || 0) + 1;
       }
     });
     return Object.entries(referralCounts)
       .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 6);
+      .sort((a, b) => b.value - a.value);
   }, [cases]);
 
   // School types distribution
@@ -74,8 +74,8 @@ const Dashboard = () => {
 
   // Education system distribution (exact 2 categories as requested)
   const educationSystemData = useMemo(() => {
-    const SPECIAL_PROGRAMS = 'برامج التربية الخاصة (دمج كلي/جزئي)';
-    const BASIC_SYSTEM = 'نظام التعليم الأساسي (بدون دعم مباشر)';
+    const SPECIAL_PROGRAMS = 'برامج التربية الخاصة';
+    const BASIC_SYSTEM = 'نظام التعليم الأساسي';
 
     let special = 0;
     let basic = 0;
@@ -160,11 +160,9 @@ const Dashboard = () => {
                 ? referralData
                 : [
                     { name: 'المدارس', value: Math.floor(totalCases * 0.4) || 1 },
-                    { name: 'أولياء الأمور', value: Math.floor(totalCases * 0.25) || 1 },
-                    { name: 'المؤسسات العلاجية', value: Math.floor(totalCases * 0.15) || 1 },
-                    { name: 'الجهات الحكومية', value: Math.floor(totalCases * 0.1) || 1 },
-                    { name: 'الرعاية التنموية', value: Math.floor(totalCases * 0.05) || 1 },
-                    { name: 'الجهة الذاتية', value: Math.floor(totalCases * 0.05) || 1 },
+                    { name: 'دائرة الأشراف التربوي', value: Math.floor(totalCases * 0.3) || 1 },
+                    { name: 'شؤون الطلبة', value: Math.floor(totalCases * 0.2) || 1 },
+                    { name: 'دائرة التوجيه المهني والإرشاد الطلابي', value: Math.floor(totalCases * 0.1) || 1 },
                   ]
             }
             height={250}
@@ -184,8 +182,8 @@ const Dashboard = () => {
               educationSystemData.some((d) => d.value > 0)
                 ? educationSystemData
                 : [
-                    { name: 'برامج التربية الخاصة (دمج كلي/جزئي)', value: 1 },
-                    { name: 'نظام التعليم الأساسي (بدون دعم مباشر)', value: 1 },
+                    { name: 'برامج التربية الخاصة', value: 1 },
+                    { name: 'نظام التعليم الأساسي', value: 1 },
                   ]
             }
             height={250}

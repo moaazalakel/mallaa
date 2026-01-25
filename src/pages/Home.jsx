@@ -82,14 +82,10 @@ const Home = () => {
           <div className="bg-[#3b2e79] p-5 rounded-lg flex flex-col gap-4">
             <div className="flex items-center gap-2 mb-5">
               <MdOutlineVisibility size={30} />
-              <h4 className="text-3xl">رؤية عمان 2040</h4>
+              <h4 className="text-3xl">الرؤية</h4>
             </div>
             <p className="text-xl">
               منظومة تربوية متكاملة تضمن الكشف المبكر والدعم الفاعل وفق رؤية عمان 2040.
-            </p>
-            <p className="text-xl">
-              مجتمع إنسانه مبدع، معتز بهويته، مبتكر ومنافس عالميًا، ينعم بحياة
-              كريمة ورفاه مستدام.
             </p>
           </div>
           <div className="bg-[#3b2e79] p-5 rounded-lg flex flex-col gap-4">

@@ -31,6 +31,10 @@ const AuditForm = () => {
   });
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     if (!caseItem) return;
     // Pre-fill some data based on case
     if (!existingAudit) {

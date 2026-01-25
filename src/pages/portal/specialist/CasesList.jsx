@@ -76,12 +76,17 @@ const CasesList = () => {
       accessor: 'actions',
       render: (row) => (
         <div className="flex gap-2">
-          <Link to={`/portal/specialist/cases/${row.id}`}>
-            <Button size="sm" variant="outline">عرض</Button>
+          <Link to={`/portal/specialist/cases/${row.id}/edit`}>
+            <Button size="sm" variant="outline">تعديل</Button>
           </Link>
           {row.status === CASE_STATUS.PENDING_EVALUATION && (
             <Link to={`/portal/specialist/cases/${row.id}/evaluate`}>
               <Button size="sm" variant="primary">تقييم</Button>
+            </Link>
+          )}
+          {row.status === CASE_STATUS.EVALUATED && (
+            <Link to={`/portal/specialist/cases/${row.id}/evaluate`}>
+              <Button size="sm" variant="primary">تعديل التقييم</Button>
             </Link>
           )}
         </div>

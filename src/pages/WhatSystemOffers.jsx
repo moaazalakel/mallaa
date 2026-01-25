@@ -99,7 +99,7 @@ const WhatSystemOffers = () => {
             </h3>
             <p className="text-gray-600 leading-7">
               توفير الأدوات والبرامج التدريبية التي تعزز كفاءة الفرق اللامركزية
-              في الكشف والتشخيص.
+              في التشخيص.
             </p>
           </div>
           <div className="p-6 bg-white rounded-2xl shadow hover:shadow-lg transition">

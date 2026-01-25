@@ -14,7 +14,16 @@ export const AuthProvider = ({ children }) => {
     // Check for stored user on mount
     const storedUser = storage.get(STORAGE_KEYS.CURRENT_USER);
     if (storedUser) {
-      setUser(storedUser);
+      // Verify user still exists in storage
+      const users = usersStorage.getAll();
+      const userExists = users.find((u) => u.id === storedUser.id && u.role === storedUser.role);
+      if (userExists) {
+        setUser(storedUser);
+      } else {
+        // User no longer exists, clear invalid session
+        storage.remove(STORAGE_KEYS.CURRENT_USER);
+        setUser(null);
+      }
     }
     setLoading(false);
   }, []);

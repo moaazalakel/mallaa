@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { casesStorage, evaluationsStorage, notificationsStorage } from '../../../data/storage';
@@ -13,6 +13,10 @@ const EvaluationForm = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const caseItem = casesStorage.findById(id);
+
+  const existingEvaluation = useMemo(() => {
+    return evaluationsStorage.findByCaseId(id);
+  }, [id]);
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -52,6 +56,51 @@ const EvaluationForm = () => {
     needsIndividualSessions: '',
     diagnosisNotes: '',
   });
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
+    if (existingEvaluation) {
+      // Pre-fill form with existing evaluation data
+      setFormData({
+        evaluatorName: existingEvaluation.evaluatorName || user?.name || '',
+        evaluationDate: existingEvaluation.evaluationDate || new Date().toISOString().split('T')[0],
+        learningDifficultiesAnswers: existingEvaluation.learningDifficultiesAnswers || {
+          reading1: '',
+          reading2: '',
+          writing1: '',
+          writing2: '',
+          attention1: '',
+          attention2: '',
+          attention3: '',
+        },
+        sensoryProcessingAnswers: existingEvaluation.sensoryProcessingAnswers || {
+          texture: '',
+          sounds: '',
+          lights: '',
+          movement: '',
+          activities: '',
+          smells: '',
+        },
+        adaptiveBehaviorAnswers: existingEvaluation.adaptiveBehaviorAnswers || {
+          phone: '',
+          selfCare: '',
+          social: '',
+          imitation: '',
+        },
+        autismScaleAnswers: existingEvaluation.autismScaleAnswers || {
+          eyeContact: '',
+          isolation: '',
+          observation: '',
+        },
+        finalDiagnosis: existingEvaluation.finalDiagnosis || '',
+        needsIndividualSessions: existingEvaluation.needsIndividualSessions || '',
+        diagnosisNotes: existingEvaluation.diagnosisNotes || '',
+      });
+    }
+  }, [existingEvaluation, user?.name]);
 
   if (!caseItem) {
     return (
@@ -98,26 +147,41 @@ const EvaluationForm = () => {
 
     setLoading(true);
 
-    evaluationsStorage.create({
-      caseId: id,
-      ...formData,
-    });
+    if (existingEvaluation) {
+      // Update existing evaluation
+      evaluationsStorage.update(existingEvaluation.id, {
+        ...formData,
+      });
 
-    // Update case status
-    casesStorage.update(id, {
-      status: 'بانتظار اعتماد المشرف',
-      disabilityType: formData.finalDiagnosis.includes('صعوبات التعلم') ? 'صعوبات التعلم' :
-                     formData.finalDiagnosis.includes('توحد') ? 'اضطراب التوحد' :
-                     caseItem.disabilityType,
-    });
+      // Create notification for supervisor
+      notificationsStorage.create({
+        message: `تم تحديث تقييم حالة: ${caseItem.studentName} - يحتاج إلى مراجعة`,
+        type: 'evaluation_updated',
+        caseId: id,
+        userId: 'user_supervisor',
+      });
+    } else {
+      // Create new evaluation
+      evaluationsStorage.create({
+        caseId: id,
+        ...formData,
+      });
 
-    // Create notification for supervisor
-    notificationsStorage.create({
-      message: `تم إكمال تقييم حالة: ${caseItem.studentName} - يحتاج إلى مراجعة`,
-      type: 'evaluation_completed',
-      caseId: id,
-      userId: 'user_supervisor',
-    });
+      // Update case status
+      casesStorage.update(id, {
+        status: 'بانتظار اعتماد المشرف',
+        disabilityType: formData.finalDiagnosis.includes('توحد') ? 'اضطراب التوحد' :
+                       caseItem.disabilityType,
+      });
+
+      // Create notification for supervisor
+      notificationsStorage.create({
+        message: `تم إكمال تقييم حالة: ${caseItem.studentName} - يحتاج إلى مراجعة`,
+        type: 'evaluation_completed',
+        caseId: id,
+        userId: 'user_supervisor',
+      });
+    }
 
     setLoading(false);
     navigate(`/portal/specialist/cases/${id}`);
@@ -150,8 +214,12 @@ const EvaluationForm = () => {
           <IoArrowBack size={24} className="text-[#211551]" />
         </button>
         <div>
-          <h1 className="text-3xl font-bold text-[#211551] mb-2">نموذج تقييم الأخصائي - المقاييس التشخيصية</h1>
-          <p className="text-gray-600">هذا النموذج مخصص لتقييم الطلاب باستخدام المقاييس التشخيصية المختلفة</p>
+          <h1 className="text-3xl font-bold text-[#211551] mb-2">
+            {existingEvaluation ? 'تعديل تقييم الأخصائي - المقاييس التشخيصية' : 'نموذج تقييم الأخصائي - المقاييس التشخيصية'}
+          </h1>
+          <p className="text-gray-600">
+            {existingEvaluation ? 'تعديل بيانات التقييم الموجود' : 'هذا النموذج مخصص لتقييم الطلاب باستخدام المقاييس التشخيصية المختلفة'}
+          </p>
         </div>
       </div>
 
@@ -417,7 +485,7 @@ const EvaluationForm = () => {
         <div className="flex gap-4 justify-end">
           <Button type="button" variant="outline" onClick={() => navigate(-1)}>إلغاء</Button>
           <Button type="submit" variant="primary" disabled={loading}>
-            {loading ? 'جاري الحفظ...' : 'إرسال النموذج'}
+            {loading ? 'جاري الحفظ...' : (existingEvaluation ? 'حفظ التعديلات' : 'إرسال النموذج')}
           </Button>
         </div>
       </form>

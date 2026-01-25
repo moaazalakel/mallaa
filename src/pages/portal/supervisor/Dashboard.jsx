@@ -101,15 +101,16 @@ const Dashboard = () => {
 
   // Referral distribution
   const referralData = useMemo(() => {
+    const allowedSources = ['المدارس', 'دائرة الأشراف التربوي', 'شؤون الطلبة', 'دائرة التوجيه المهني والإرشاد الطلابي'];
     const referralCounts = {};
     allCases.forEach((c) => {
-      if (c.referralSource) {
+      if (c.referralSource && allowedSources.includes(c.referralSource)) {
         referralCounts[c.referralSource] = (referralCounts[c.referralSource] || 0) + 1;
       }
     });
     return Object.entries(referralCounts)
       .map(([name, value]) => ({ name, value }))
-      .slice(0, 6);
+      .sort((a, b) => b.value - a.value);
   }, [allCases]);
 
   const tableColumns = [
@@ -186,11 +187,9 @@ const Dashboard = () => {
           <DonutChart
             data={referralData.length > 0 ? referralData : [
               { name: 'المدارس', value: Math.floor(totalCases * 0.4) || 1 },
-              { name: 'أولياء الأمور', value: Math.floor(totalCases * 0.25) || 1 },
-              { name: 'المؤسسات العلاجية', value: Math.floor(totalCases * 0.15) || 1 },
-              { name: 'الجهات الحكومية', value: Math.floor(totalCases * 0.1) || 1 },
-              { name: 'الرعاية التنموية', value: Math.floor(totalCases * 0.05) || 1 },
-              { name: 'الجهة الذاتية', value: Math.floor(totalCases * 0.05) || 1 },
+              { name: 'دائرة الأشراف التربوي', value: Math.floor(totalCases * 0.3) || 1 },
+              { name: 'شؤون الطلبة', value: Math.floor(totalCases * 0.2) || 1 },
+              { name: 'دائرة التوجيه المهني والإرشاد الطلابي', value: Math.floor(totalCases * 0.1) || 1 },
             ]}
             height={300}
           />

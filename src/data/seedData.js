@@ -103,7 +103,7 @@ export const generateCases = (users) => {
     const gender = Math.random() > 0.5 ? GENDER.MALE : GENDER.FEMALE;
     const disabilityType =
       status === CASE_STATUS.PENDING_EVALUATION
-        ? (Math.random() > 0.65 ? 'غير مصنف' : DISABILITY_TYPES[Math.floor(Math.random() * DISABILITY_TYPES.length)])
+        ? (Math.random() > 0.65 ? 'أخرى' : DISABILITY_TYPES[Math.floor(Math.random() * DISABILITY_TYPES.length)])
         : DISABILITY_TYPES[Math.floor(Math.random() * DISABILITY_TYPES.length)];
     const referralSource = REFERRAL_SOURCES[Math.floor(Math.random() * REFERRAL_SOURCES.length)];
     const schoolType = Math.random() > 0.7 ? SCHOOL_TYPES.PRIVATE : SCHOOL_TYPES.PUBLIC;
@@ -157,7 +157,7 @@ export const generateEvaluations = (cases, users) => {
     const specialist = specialists.find((s) => s.governorateId === caseItem.governorateId);
 
     const needsSessionsProb =
-      ['اضطراب التوحد', 'إعاقة ذهنية', 'شلل دماغي', 'متلازمة داون'].includes(caseItem.disabilityType) ? 0.78 : 0.42;
+      ['اضطراب التوحد', 'إعاقة ذهنية', 'متلازمة داون'].includes(caseItem.disabilityType) ? 0.78 : 0.42;
     const needsIndividualSessions = Math.random() < needsSessionsProb ? 'نعم' : 'لا';
     
     evaluations.push({
@@ -347,7 +347,7 @@ export const seedData = () => {
   
   // Check if data version matches (to force re-seed when structure changes)
   const dataVersion = localStorage.getItem('mallaa_data_version');
-  const currentVersion = '2.2'; // Incremented to force re-seed for consistent demo dataset
+  const currentVersion = '2.4'; // Incremented to force re-seed with updated options
   
   if (initialized === 'true' && dataVersion === currentVersion) {
     return; // Already seeded with current version

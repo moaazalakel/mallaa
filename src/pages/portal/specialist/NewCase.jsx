@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-import { casesStorage, notificationsStorage } from '../../../data/storage';
+import { auditsStorage, casesStorage, notificationsStorage } from '../../../data/storage';
 import { EDUCATION_PROGRAMS, GOVERNORATES, GENDER, INCLUSION_TYPES, REFERRAL_SOURCES } from '../../../data/constants';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
@@ -124,6 +124,15 @@ const NewCase = () => {
         createdAt: existingCase.createdAt,
       });
 
+      // If this case was already reviewed, mark central review as "needs follow-up"
+      const existingReview = auditsStorage.findByCaseId(id);
+      if (existingReview) {
+        auditsStorage.update(existingReview.id, {
+          reviewStatus: 'تحتاج متابعة',
+          reviewCloseDate: '',
+        });
+      }
+
       // Create notification for supervisor
       notificationsStorage.create({
         message: `تم تحديث حالة: ${formData.studentName} في ${GOVERNORATES.find((g) => g.id === formData.governorateId)?.name}`,
@@ -131,6 +140,16 @@ const NewCase = () => {
         caseId: id,
         userId: 'user_supervisor',
       });
+
+      // Extra notification if review exists (to prompt re-check)
+      if (existingReview) {
+        notificationsStorage.create({
+          message: `تم تعديل بيانات حالة: ${formData.studentName} — تم تحويل حالة المراجعة إلى "تحتاج متابعة"`,
+          type: 'review_needs_followup',
+          caseId: id,
+          userId: 'user_supervisor',
+        });
+      }
     } else {
       // Create new case
       const newCase = casesStorage.create({

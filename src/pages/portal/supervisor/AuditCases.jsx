@@ -57,6 +57,7 @@ const AuditCases = () => {
   });
 
   const [saving, setSaving] = useState(false);
+  const [saveNote, setSaveNote] = useState('');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -172,13 +173,14 @@ const AuditCases = () => {
 
   const reviewStatusLabel = (audit) => {
     if (!audit) return 'غير مبدوءة';
-    return audit.reviewStatus || 'غير مبدوءة';
+    return audit.reviewStatus || 'غير محددة';
   };
 
   const reviewStatusVariant = (label) => {
     if (label === 'مكتملة') return 'success';
     if (label === 'تحتاج متابعة') return 'warning';
     if (label === 'قيد المراجعة') return 'info';
+    if (label === 'غير محددة') return 'default';
     return 'default';
   };
 
@@ -244,18 +246,57 @@ const AuditCases = () => {
     return created?.id || null;
   };
 
+  const todayISO = () => new Date().toISOString().split('T')[0];
+
+  const isCentralReviewComplete = (data) => {
+    const axes = data?.professionalAxesNotes || {};
+    const hasAllAxes = ['axis1','axis2','axis3','axis4','axis5','axis6','axis7'].every((k) => (axes[k] || '').trim().length > 0);
+    const hasGeneral = (data?.generalNotes || '').trim().length > 0;
+    const hasStart = Boolean(data?.reviewStartDate);
+    return hasAllAxes && hasGeneral && hasStart;
+  };
+
   const handleSaveCentralReview = async () => {
     if (!selectedCase) return;
     setSaving(true);
+    setSaveNote('');
 
-    const payload = {
+    const startDate = reviewForm.reviewStartDate || todayISO();
+    const requestedStatus = reviewForm.reviewStatus || '';
+
+    // If user tries to mark as completed, enforce completeness of descriptive fields
+    const baseDraft = {
       centralReviewerUserId: user?.id || null,
       centralReviewerName: reviewForm.centralReviewerName || user?.name || '',
-      reviewStartDate: reviewForm.reviewStartDate,
+      reviewStartDate: startDate,
       reviewCloseDate: reviewForm.reviewCloseDate,
-      reviewStatus: reviewForm.reviewStatus,
+      reviewStatus: requestedStatus,
       generalNotes: reviewForm.generalNotes,
       professionalAxesNotes: reviewForm.professionalAxesNotes,
+    };
+
+    let finalStatus = requestedStatus;
+    let closeDate = reviewForm.reviewCloseDate;
+
+    if (requestedStatus === 'مكتملة') {
+      const ok = isCentralReviewComplete(baseDraft);
+      if (!ok) {
+        finalStatus = 'قيد المراجعة';
+        closeDate = '';
+        setSaveNote('لا يمكن اعتماد حالة المراجعة كمكتملة إلا بعد استكمال جميع محاور التقويم وإضافة ملاحظات عامة وتسجيل تاريخ بدء المراجعة.');
+      } else {
+        closeDate = closeDate || todayISO();
+      }
+    } else if (requestedStatus && requestedStatus !== 'مكتملة') {
+      // If moved away from completed, clear close date
+      closeDate = '';
+    }
+
+    const payload = {
+      ...baseDraft,
+      reviewStartDate: startDate,
+      reviewStatus: finalStatus,
+      reviewCloseDate: closeDate,
     };
 
     upsertReview(payload);
@@ -483,9 +524,7 @@ const AuditCases = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
           <Card title="عرض ملخص الحالة (للقراءة فقط)">
-            {!selectedCase ? (
-              <p className="text-gray-600">اختر حالة من الجدول لعرض التفاصيل.</p>
-            ) : (
+            {selectedCase ? (
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -533,6 +572,8 @@ const AuditCases = () => {
                   <p className="text-gray-700 whitespace-pre-line">{selectedCase.caseDescription || '—'}</p>
                 </div>
               </div>
+            ) : (
+              <p className="text-gray-600">اختر حالة من الجدول لعرض التفاصيل.</p>
             )}
           </Card>
 
@@ -577,6 +618,11 @@ const AuditCases = () => {
               <p className="text-gray-600">اختر حالة من الجدول أولاً.</p>
             ) : (
               <div className="space-y-4">
+                {saveNote ? (
+                  <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg text-sm">
+                    {saveNote}
+                  </div>
+                ) : null}
                 <Input
                   label="اسم المراجع المركزي"
                   value={reviewForm.centralReviewerName}

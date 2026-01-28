@@ -17,15 +17,13 @@ export const GOVERNORATES = [
 export const ROLES = {
   SPECIALIST: 'الأخصائي',
   SUPERVISOR: 'المشرف',
+  SECTION_HEAD: 'رئيس القسم',
 };
 
 // Case Statuses
 export const CASE_STATUS = {
-  PENDING_EVALUATION: 'قيد التقييم',
-  EVALUATED: 'تم التقييم',
   COMPLETED: 'مكتمل',
   INCOMPLETE: 'ناقص',
-  PENDING_APPROVAL: 'بانتظار اعتماد المشرف',
 };
 
 // Gender
@@ -37,10 +35,22 @@ export const GENDER = {
 // Referral Sources
 export const REFERRAL_SOURCES = [
   'المدارس',
-  'دائرة الأشراف التربوي',
-  'شؤون الطلبة',
-  'دائرة التوجيه المهني والإرشاد الطلابي',
+  'خدمة المراجعين',
+  'دائرة الإشراف التربوي',
+  'دائرة التوجيه والإرشاد الطلابي',
+  'مراكز التأهيل',
 ];
+
+// Education Programs (for dashboard #3)
+export const EDUCATION_PROGRAMS = [
+  'التعليم الأساسي',
+  'التربية الخاصة',
+  'البرنامج الفكري',
+  'البرنامج السمعي',
+];
+
+// Inclusion Type (for trends comparison)
+export const INCLUSION_TYPES = ['كلي', 'جزئي'];
 
 // Disability Types
 export const DISABILITY_TYPES = [
@@ -76,7 +86,6 @@ export const AUDIT_DECISIONS = {
 export const STORAGE_KEYS = {
   USERS: 'mallaa_users',
   CASES: 'mallaa_cases',
-  EVALUATIONS: 'mallaa_evaluations',
   AUDITS: 'mallaa_audits',
   ACTIVITIES: 'mallaa_activities',
   CURRENT_USER: 'mallaa_current_user',

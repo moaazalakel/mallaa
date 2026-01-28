@@ -1,6 +1,6 @@
 // Using timestamp-based IDs instead of uuid for simplicity
-import { GOVERNORATES, ROLES, CASE_STATUS, GENDER, REFERRAL_SOURCES, DISABILITY_TYPES, SCHOOL_TYPES, AUDIT_DECISIONS } from './constants';
-import { usersStorage, casesStorage, evaluationsStorage, auditsStorage, activitiesStorage } from './storage';
+import { GOVERNORATES, ROLES, CASE_STATUS, GENDER, REFERRAL_SOURCES, DISABILITY_TYPES, SCHOOL_TYPES, AUDIT_DECISIONS, EDUCATION_PROGRAMS, INCLUSION_TYPES } from './constants';
+import { usersStorage, casesStorage, auditsStorage, activitiesStorage } from './storage';
 import { subMonths } from 'date-fns';
 
 // Arabic names for realistic data
@@ -32,7 +32,7 @@ const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + mi
 // Generate users (11 specialists + 1 supervisor)
 export const generateUsers = () => {
   const users = [];
-  
+
   // Generate 11 specialists (one per governorate)
   GOVERNORATES.forEach((gov, index) => {
     users.push({
@@ -53,8 +53,19 @@ export const generateUsers = () => {
     password: '123456',
     role: ROLES.SUPERVISOR,
     governorateId: null,
-    name: 'المشرف العام',
+    name: 'المراجع المركزي',
     email: 'supervisor@moe.om',
+  });
+
+  // Generate 1 section head (المسؤول المركزي المباشر)
+  users.push({
+    id: 'user_section_head',
+    username: 'section_head',
+    password: '123456',
+    role: ROLES.SECTION_HEAD,
+    governorateId: null,
+    name: 'رئيس القسم',
+    email: 'section.head@moe.om',
   });
 
   return users;
@@ -65,12 +76,12 @@ export const generateCases = (users) => {
   const cases = [];
   const specialists = users.filter((u) => u.role === ROLES.SPECIALIST);
   const now = new Date();
-  
+
   // Generate more cases with richer variation
   const TOTAL_CASES = 240;
   for (let i = 0; i < TOTAL_CASES; i++) {
     const specialist = specialists[Math.floor(Math.random() * specialists.length)];
-    
+
     // Force ages to be consistent across dashboards: 1–12 فقط (إزالة 13–18)
     // Weighted distribution to ensure presence of (1-4)
     const bucketRand = Math.random();
@@ -84,35 +95,26 @@ export const generateCases = (users) => {
 
     const diagnosisDate = randomDate(subMonths(now, 12), now);
     const createdAt = randomDate(subMonths(now, 12), now);
-    
-    // Status distribution with more realistic variation
+
+    // Status distribution (بعد إزالة نموذج التقييم واعتماد المشرف)
     const statusRand = Math.random();
-    let status;
-    if (statusRand < 0.46) {
-      status = CASE_STATUS.COMPLETED;
-    } else if (statusRand < 0.66) {
-      status = CASE_STATUS.PENDING_EVALUATION;
-    } else if (statusRand < 0.86) {
-      status = CASE_STATUS.PENDING_APPROVAL;
-    } else if (statusRand < 0.94) {
-      status = CASE_STATUS.EVALUATED;
-    } else {
-      status = CASE_STATUS.INCOMPLETE;
-    }
+    const status = statusRand < 0.82 ? CASE_STATUS.COMPLETED : CASE_STATUS.INCOMPLETE;
 
     const gender = Math.random() > 0.5 ? GENDER.MALE : GENDER.FEMALE;
-    const disabilityType =
-      status === CASE_STATUS.PENDING_EVALUATION
-        ? (Math.random() > 0.65 ? 'أخرى' : DISABILITY_TYPES[Math.floor(Math.random() * DISABILITY_TYPES.length)])
-        : DISABILITY_TYPES[Math.floor(Math.random() * DISABILITY_TYPES.length)];
+    const disabilityType = DISABILITY_TYPES[Math.floor(Math.random() * DISABILITY_TYPES.length)];
     const referralSource = REFERRAL_SOURCES[Math.floor(Math.random() * REFERRAL_SOURCES.length)];
     const schoolType = Math.random() > 0.7 ? SCHOOL_TYPES.PRIVATE : SCHOOL_TYPES.PUBLIC;
+    const educationProgram = (() => {
+      // Weighted distribution
+      const r = Math.random();
+      if (r < 0.56) return 'التعليم الأساسي';
+      if (r < 0.80) return 'التربية الخاصة';
+      if (r < 0.92) return 'البرنامج الفكري';
+      return 'البرنامج السمعي';
+    })();
+    const inclusionType = INCLUSION_TYPES[Math.random() < 0.6 ? 0 : 1]; // كلي أكثر قليلاً
     const attachmentsCount =
-      status === CASE_STATUS.COMPLETED ? randomInt(6, 7)
-      : status === CASE_STATUS.PENDING_APPROVAL ? randomInt(5, 7)
-      : status === CASE_STATUS.EVALUATED ? randomInt(4, 7)
-      : status === CASE_STATUS.INCOMPLETE ? randomInt(1, 4)
-      : randomInt(2, 6);
+      status === CASE_STATUS.COMPLETED ? randomInt(5, 7) : randomInt(1, 4);
 
     cases.push({
       id: `case_${i + 1}`,
@@ -126,6 +128,8 @@ export const generateCases = (users) => {
       school: `مدرسة ${ARABIC_LAST_NAMES[Math.floor(Math.random() * ARABIC_LAST_NAMES.length)]}`,
       caseDescription: `حالة طالب يعاني من ${disabilityType}، يحتاج إلى تقييم شامل ومتابعة مستمرة.`,
       referralSource,
+      educationProgram,
+      inclusionType,
       recommendations: `- وضع خطة تعليمية فردية (IEP)\n- توفير دعم إضافي في الفصل\n- جلسات علاجية أسبوعية\n- متابعة دورية مع ولي الأمر`,
       attachments: {
         count: attachmentsCount,
@@ -143,83 +147,20 @@ export const generateCases = (users) => {
   return cases;
 };
 
-// Generate evaluations
-export const generateEvaluations = (cases, users) => {
-  const evaluations = [];
-  const casesNeedingEvaluation = cases.filter((c) =>
-    [CASE_STATUS.COMPLETED, CASE_STATUS.PENDING_APPROVAL, CASE_STATUS.EVALUATED].includes(c.status)
-  );
-  const specialists = users.filter((u) => u.role === ROLES.SPECIALIST);
-  
-  // Generate evaluations for cases that reached evaluation stage
-  casesNeedingEvaluation.forEach((caseItem) => {
-    const evaluationDate = randomDate(new Date(caseItem.createdAt), new Date());
-    const specialist = specialists.find((s) => s.governorateId === caseItem.governorateId);
-
-    const needsSessionsProb =
-      ['اضطراب التوحد', 'إعاقة ذهنية', 'متلازمة داون'].includes(caseItem.disabilityType) ? 0.78 : 0.42;
-    const needsIndividualSessions = Math.random() < needsSessionsProb ? 'نعم' : 'لا';
-    
-    evaluations.push({
-      id: `eval_${caseItem.id}`,
-      caseId: caseItem.id,
-      evaluatorName: specialist?.name || generateArabicName(),
-      evaluationDate: evaluationDate.toISOString().split('T')[0],
-      learningDifficultiesAnswers: {
-        reading1: Math.random() > 0.35 ? 'نعم' : 'لا',
-        reading2: Math.random() > 0.35 ? 'نعم' : 'لا',
-        writing1: Math.random() > 0.35 ? 'نعم' : 'لا',
-        writing2: Math.random() > 0.35 ? 'نعم' : 'لا',
-        attention1: Math.random() > 0.35 ? 'نعم' : 'لا',
-        attention2: Math.random() > 0.35 ? 'نعم' : 'لا',
-        attention3: Math.random() > 0.35 ? 'نعم' : 'لا',
-      },
-      sensoryProcessingAnswers: {
-        texture: Math.random() > 0.5 ? 'نعم' : 'لا',
-        sounds: Math.random() > 0.5 ? 'نعم' : 'لا',
-        lights: Math.random() > 0.5 ? 'نعم' : 'لا',
-        movement: Math.random() > 0.5 ? 'نعم' : 'لا',
-        activities: Math.random() > 0.5 ? 'نعم' : 'لا',
-        smells: Math.random() > 0.5 ? 'نعم' : 'لا',
-      },
-      adaptiveBehaviorAnswers: {
-        phone: Math.random() > 0.4 ? 'نعم' : 'لا',
-        selfCare: Math.random() > 0.3 ? 'نعم' : 'لا',
-        social: Math.random() > 0.4 ? 'نعم' : 'لا',
-        imitation: Math.random() > 0.3 ? 'نعم' : 'لا',
-      },
-      autismScaleAnswers: {
-        eyeContact: ['ولا مرة', 'نادراً', 'أحياناً', 'غالباً', 'دائماً'][randomInt(0, 4)],
-        isolation: ['ولا مرة', 'نادراً', 'أحياناً', 'غالباً', 'دائماً'][randomInt(0, 4)],
-        observation: ['ولا مرة', 'نادراً', 'أحياناً', 'غالباً', 'دائماً'][randomInt(0, 4)],
-      },
-      finalDiagnosis: `تشخيص: ${caseItem.disabilityType} - يحتاج إلى برنامج تعليمي متخصص مع دعم إضافي.`,
-      needsIndividualSessions,
-      diagnosisNotes:
-        needsIndividualSessions === 'نعم'
-          ? 'تم إجراء التقييم الشامل. النتائج تشير إلى الحاجة لخطة تدخل ودعم متخصص.'
-          : 'تم إجراء التقييم الشامل. النتائج تشير إلى إمكانية المتابعة ضمن التعليم الأساسي مع دعم غير مباشر.',
-      createdAt: evaluationDate.toISOString(),
-    });
-  });
-
-  return evaluations;
-};
-
 // Generate audits
 export const generateAudits = (cases, users) => {
   const audits = [];
-  const pendingApprovalCases = cases.filter((c) => c.status === CASE_STATUS.PENDING_APPROVAL);
-  const completedOrEvaluated = cases.filter((c) => [CASE_STATUS.COMPLETED, CASE_STATUS.EVALUATED].includes(c.status));
+  // بعد إزالة «اعتماد المشرف» و«نموذج التقييم»: نولّد تدقيق/مراجعة مركزية لبعض الحالات المكتملة فقط
+  const completedCases = cases.filter((c) => c.status === CASE_STATUS.COMPLETED);
   const specialists = users.filter((u) => u.role === ROLES.SPECIALIST);
-  
-  // Generate audits for pending approval cases
-  pendingApprovalCases.forEach((caseItem) => {
-    // Not every pending case has an audit yet (to show "بانتظار التدقيق")
-    if (Math.random() > 0.65) return;
+
+  // Generate audits for a subset of completed cases
+  completedCases.forEach((caseItem) => {
+    // Not every case has an audit yet (to show "بانتظار التدقيق")
+    if (Math.random() > 0.55) return;
     const specialist = specialists.find((s) => s.governorateId === caseItem.governorateId);
     if (!specialist) return;
-    
+
     const submittedAt = randomDate(new Date(caseItem.createdAt), new Date());
     const decisionRand = Math.random();
     let finalDecision;
@@ -248,8 +189,8 @@ export const generateAudits = (cases, users) => {
     });
   });
 
-  // Add some historical audits for completed/evaluated cases (to enrich dashboards)
-  completedOrEvaluated.forEach((caseItem) => {
+  // Add some historical audits (to enrich dashboards)
+  completedCases.forEach((caseItem) => {
     if (Math.random() > 0.35) return;
     const specialist = specialists.find((s) => s.governorateId === caseItem.governorateId);
     if (!specialist) return;
@@ -279,7 +220,7 @@ export const generateActivities = (users) => {
   const specialists = users.filter((u) => u.role === ROLES.SPECIALIST);
   const supervisor = users.find((u) => u.role === ROLES.SUPERVISOR);
   const now = new Date();
-  
+
   const activityTitles = [
     'ورشة تدريبية حول استخدام المقاييس التشخيصية',
     'اجتماع فريق التشخيص الشهري',
@@ -331,11 +272,12 @@ export const resetData = () => {
   localStorage.removeItem('mallaa_initialized');
   localStorage.removeItem('mallaa_users');
   localStorage.removeItem('mallaa_cases');
-  localStorage.removeItem('mallaa_evaluations');
   localStorage.removeItem('mallaa_audits');
   localStorage.removeItem('mallaa_activities');
   localStorage.removeItem('mallaa_notifications');
   localStorage.removeItem('mallaa_current_user');
+  // Backward-compat cleanup (إصدارات قديمة)
+  localStorage.removeItem('mallaa_evaluations');
   console.log('Data cleared, reloading...');
   window.location.reload();
 };
@@ -344,23 +286,24 @@ export const resetData = () => {
 export const seedData = () => {
   // Check if already initialized
   const initialized = localStorage.getItem('mallaa_initialized');
-  
+
   // Check if data version matches (to force re-seed when structure changes)
   const dataVersion = localStorage.getItem('mallaa_data_version');
-  const currentVersion = '2.4'; // Incremented to force re-seed with updated options
-  
+  const currentVersion = '2.6'; // Incremented to force re-seed after adding educationProgram/inclusionType + referral sources
+
   if (initialized === 'true' && dataVersion === currentVersion) {
     return; // Already seeded with current version
   }
-  
+
   // Clear old data if version mismatch
   if (dataVersion !== currentVersion) {
     localStorage.removeItem('mallaa_users');
     localStorage.removeItem('mallaa_cases');
-    localStorage.removeItem('mallaa_evaluations');
     localStorage.removeItem('mallaa_audits');
     localStorage.removeItem('mallaa_activities');
     localStorage.removeItem('mallaa_notifications');
+    // Backward-compat cleanup (إصدارات قديمة)
+    localStorage.removeItem('mallaa_evaluations');
   }
 
   console.log('Seeding data...');
@@ -374,11 +317,6 @@ export const seedData = () => {
   const cases = generateCases(users);
   casesStorage.save(cases);
   console.log(`Generated ${cases.length} cases`);
-
-  // Generate and save evaluations
-  const evaluations = generateEvaluations(cases, users);
-  evaluationsStorage.save(evaluations);
-  console.log(`Generated ${evaluations.length} evaluations`);
 
   // Generate and save audits
   const audits = generateAudits(cases, users);

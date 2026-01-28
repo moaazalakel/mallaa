@@ -84,7 +84,8 @@ const LeadershipDashboard = () => {
     const approved = allAudits.filter((a) => a.finalDecision === AUDIT_DECISIONS.APPROVED).length;
     const approvalRate = audited > 0 ? Math.round((approved / audited) * 100) : 91;
 
-    const pending = allCases.filter((c) => c.status === CASE_STATUS.PENDING_APPROVAL).length;
+    // بعد إزالة «اعتماد المشرف»: نستخدم "ناقص" كمؤشر متابعة بديل داخل لوحة القيادة
+    const pending = allCases.filter((c) => c.status === CASE_STATUS.INCOMPLETE).length;
     const completed = allCases.filter((c) => c.status === CASE_STATUS.COMPLETED).length;
     const completionRate = allCases.length > 0 ? Math.round((completed / allCases.length) * 100) : 78;
 

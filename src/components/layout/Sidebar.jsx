@@ -19,12 +19,13 @@ import {
 } from 'react-icons/io5';
 
 const Sidebar = ({ isOpen, onClose }) => {
-  const { isSpecialist, isSupervisor } = useAuth();
+  const { isSpecialist, isSupervisorOrSectionHead } = useAuth();
 
   const specialistLinks = [
     { to: '/portal/specialist/dashboard', label: 'لوحة التحكم', icon: IoHomeOutline, activeIcon: IoHome },
     { to: '/portal/specialist/cases', label: 'قائمة الحالات', icon: IoDocumentTextOutline, activeIcon: IoDocumentText },
     { to: '/portal/specialist/cases/new', label: 'تسجيل حالة جديدة', icon: IoAddCircleOutline, activeIcon: IoAddCircle },
+    { to: '/portal/specialist/audit', label: 'تقويم الكفاءة المهنية', icon: IoClipboardOutline, activeIcon: IoClipboard },
     { to: '/portal/specialist/activities', label: 'الأنشطة', icon: IoCalendarOutline, activeIcon: IoCalendar },
   ];
 
@@ -33,11 +34,11 @@ const Sidebar = ({ isOpen, onClose }) => {
     { to: '/portal/supervisor/leadership', label: 'لوحة القيادة', icon: IoBarChartOutline, activeIcon: IoBarChart },
     { to: '/portal/supervisor/governorates', label: 'تقييم المحافظات', icon: IoBarChartOutline, activeIcon: IoBarChart },
     { to: '/portal/supervisor/specialists', label: 'تقييم الأخصائيين', icon: IoPeopleOutline, activeIcon: IoPeople },
-    { to: '/portal/supervisor/audit', label: 'تدقيق الحالات', icon: IoClipboardOutline, activeIcon: IoClipboard },
+    { to: '/portal/supervisor/audit', label: 'تقويم الكفاءة المهنية', icon: IoClipboardOutline, activeIcon: IoClipboard },
     { to: '/portal/supervisor/activities', label: 'الأنشطة', icon: IoCalendarOutline, activeIcon: IoCalendar },
   ];
 
-  const links = isSpecialist() ? specialistLinks : isSupervisor() ? supervisorLinks : [];
+  const links = isSpecialist() ? specialistLinks : isSupervisorOrSectionHead() ? supervisorLinks : [];
 
   return (
     <>

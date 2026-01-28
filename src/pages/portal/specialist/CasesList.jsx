@@ -41,9 +41,7 @@ const CasesList = () => {
   const getStatusBadge = (status) => {
     const variants = {
       [CASE_STATUS.COMPLETED]: 'success',
-      [CASE_STATUS.PENDING_EVALUATION]: 'warning',
       [CASE_STATUS.INCOMPLETE]: 'danger',
-      [CASE_STATUS.PENDING_APPROVAL]: 'info',
     };
     return <Badge variant={variants[status] || 'default'}>{status}</Badge>;
   };
@@ -79,16 +77,6 @@ const CasesList = () => {
           <Link to={`/portal/specialist/cases/${row.id}/edit`}>
             <Button size="sm" variant="outline">تعديل</Button>
           </Link>
-          {row.status === CASE_STATUS.PENDING_EVALUATION && (
-            <Link to={`/portal/specialist/cases/${row.id}/evaluate`}>
-              <Button size="sm" variant="primary">تقييم</Button>
-            </Link>
-          )}
-          {row.status === CASE_STATUS.EVALUATED && (
-            <Link to={`/portal/specialist/cases/${row.id}/evaluate`}>
-              <Button size="sm" variant="primary">تعديل التقييم</Button>
-            </Link>
-          )}
         </div>
       ),
     },
@@ -124,9 +112,7 @@ const CasesList = () => {
           >
             <option value="all">جميع الحالات</option>
             <option value={CASE_STATUS.COMPLETED}>مكتمل</option>
-            <option value={CASE_STATUS.PENDING_EVALUATION}>قيد التقييم</option>
             <option value={CASE_STATUS.INCOMPLETE}>ناقص</option>
-            <option value={CASE_STATUS.PENDING_APPROVAL}>بانتظار اعتماد المشرف</option>
           </select>
         </div>
 

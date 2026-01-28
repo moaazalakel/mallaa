@@ -79,12 +79,7 @@ const AuditForm = () => {
       auditsStorage.create(auditData);
     }
 
-    // Update case status based on decision
-    if (formData.departmentHeadDecision === AUDIT_DECISIONS.APPROVED) {
-      casesStorage.update(id, { status: 'مكتمل' });
-    } else if (formData.departmentHeadDecision === AUDIT_DECISIONS.NEEDS_REVISION) {
-      casesStorage.update(id, { status: 'قيد التقييم' });
-    }
+    // ملاحظة: بعد إزالة «اعتماد المشرف» لا نغيّر حالة الحالة التشخيصية من هنا.
 
     // Create notification
     notificationsStorage.create({

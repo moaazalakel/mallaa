@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { casesStorage, notificationsStorage } from '../../../data/storage';
-import { GOVERNORATES, GENDER, REFERRAL_SOURCES } from '../../../data/constants';
+import { EDUCATION_PROGRAMS, GOVERNORATES, GENDER, INCLUSION_TYPES, REFERRAL_SOURCES } from '../../../data/constants';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
 import DatePicker from '../../../components/ui/DatePicker';
@@ -29,6 +29,8 @@ const NewCase = () => {
     school: '',
     caseDescription: '',
     referralSource: '',
+    educationProgram: '',
+    inclusionType: '',
     recommendations: '',
   });
 
@@ -56,6 +58,8 @@ const NewCase = () => {
         school: existingCase.school || '',
         caseDescription: existingCase.caseDescription || '',
         referralSource: existingCase.referralSource || '',
+        educationProgram: existingCase.educationProgram || '',
+        inclusionType: existingCase.inclusionType || '',
         recommendations: existingCase.recommendations || '',
       });
     }
@@ -91,6 +95,8 @@ const NewCase = () => {
     if (!formData.school.trim()) newErrors.school = 'المدرسة مطلوبة';
     if (!formData.caseDescription.trim()) newErrors.caseDescription = 'وصف الحالة مطلوب';
     if (!formData.referralSource.trim()) newErrors.referralSource = 'جهة الإحالة مطلوبة';
+    if (!formData.educationProgram) newErrors.educationProgram = 'برنامج التعليم مطلوب';
+    if (!formData.inclusionType) newErrors.inclusionType = 'نوع الدمج مطلوب';
     if (!formData.recommendations.trim()) newErrors.recommendations = 'التوصيات مطلوبة';
 
     setErrors(newErrors);
@@ -130,8 +136,8 @@ const NewCase = () => {
       const newCase = casesStorage.create({
         ...formData,
         age,
-        status: 'قيد التقييم',
-        disabilityType: 'أخرى', // Will be updated after evaluation
+        status: 'مكتمل',
+        disabilityType: 'أخرى',
         schoolType: 'مدارس حكومية', // Default
         attachments: { count: 0, required: 7 },
       });
@@ -268,6 +274,27 @@ const NewCase = () => {
             placeholder="اختر جهة الإحالة"
             options={REFERRAL_SOURCES.map((source) => ({ value: source, label: source }))}
           />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Select
+              label="برنامج التعليم *"
+              value={formData.educationProgram}
+              onChange={(e) => handleChange('educationProgram', e.target.value)}
+              error={errors.educationProgram}
+              showEmpty
+              placeholder="اختر برنامج التعليم"
+              options={EDUCATION_PROGRAMS.map((p) => ({ value: p, label: p }))}
+            />
+            <Select
+              label="نوع الدمج *"
+              value={formData.inclusionType}
+              onChange={(e) => handleChange('inclusionType', e.target.value)}
+              error={errors.inclusionType}
+              showEmpty
+              placeholder="اختر نوع الدمج"
+              options={INCLUSION_TYPES.map((t) => ({ value: t, label: t }))}
+            />
+          </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">التوصيات *</label>

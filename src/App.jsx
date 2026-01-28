@@ -17,7 +17,6 @@ import SpecialistDashboard from './pages/portal/specialist/Dashboard';
 import CasesList from './pages/portal/specialist/CasesList';
 import NewCase from './pages/portal/specialist/NewCase';
 import CaseDetails from './pages/portal/specialist/CaseDetails';
-import EvaluationForm from './pages/portal/specialist/EvaluationForm';
 import SupervisorDashboard from './pages/portal/supervisor/Dashboard';
 import AuditForm from './pages/portal/supervisor/AuditForm';
 import AuditCases from './pages/portal/supervisor/AuditCases';
@@ -65,7 +64,7 @@ function App() {
                   <Route path="cases/new" element={<NewCase />} />
                   <Route path="cases/:id" element={<CaseDetails />} />
                   <Route path="cases/:id/edit" element={<NewCase />} />
-                  <Route path="cases/:id/evaluate" element={<EvaluationForm />} />
+                  <Route path="audit" element={<AuditCases />} />
                   <Route path="activities" element={<ActivitiesList />} />
                   <Route path="activities/new" element={<NewActivity />} />
                   <Route path="activities/:id/view" element={<ActivityView />} />
@@ -80,7 +79,7 @@ function App() {
         <Route
           path="/portal/supervisor/*"
           element={
-            <ProtectedRoute allowedRoles={[ROLES.SUPERVISOR]}>
+            <ProtectedRoute allowedRoles={[ROLES.SUPERVISOR, ROLES.SECTION_HEAD]}>
               <PortalLayout>
                 <Routes>
                   <Route path="dashboard" element={<SupervisorDashboard />} />
@@ -109,7 +108,7 @@ function App() {
         <Route path="/methodology" element={<PublicLayout><Methodology /></PublicLayout>} />
         <Route path="/services" element={<PublicLayout><ServicesAndReports /></PublicLayout>} />
         <Route path="/faq" element={<PublicLayout><FAQPage /></PublicLayout>} />
-        
+
         {/* Catch-all route - redirect to home for any unknown routes */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

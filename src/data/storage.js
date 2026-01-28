@@ -112,36 +112,6 @@ export const casesStorage = {
   },
 };
 
-export const evaluationsStorage = {
-  getAll: () => storage.get(STORAGE_KEYS.EVALUATIONS) || [],
-  save: (evaluations) => storage.set(STORAGE_KEYS.EVALUATIONS, evaluations),
-  findByCaseId: (caseId) => {
-    const evaluations = evaluationsStorage.getAll();
-    return evaluations.find((e) => e.caseId === caseId);
-  },
-  create: (evaluationData) => {
-    const evaluations = evaluationsStorage.getAll();
-    const newEvaluation = {
-      ...evaluationData,
-      id: evaluationData.id || `eval_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: evaluationData.createdAt || new Date().toISOString(),
-    };
-    evaluations.push(newEvaluation);
-    evaluationsStorage.save(evaluations);
-    return newEvaluation;
-  },
-  update: (id, updates) => {
-    const evaluations = evaluationsStorage.getAll();
-    const index = evaluations.findIndex((e) => e.id === id);
-    if (index !== -1) {
-      evaluations[index] = { ...evaluations[index], ...updates };
-      evaluationsStorage.save(evaluations);
-      return evaluations[index];
-    }
-    return null;
-  },
-};
-
 export const auditsStorage = {
   getAll: () => storage.get(STORAGE_KEYS.AUDITS) || [],
   save: (audits) => storage.set(STORAGE_KEYS.AUDITS, audits),

@@ -52,6 +52,8 @@ export const AuthProvider = ({ children }) => {
 
   const isSpecialist = () => user?.role === ROLES.SPECIALIST;
   const isSupervisor = () => user?.role === ROLES.SUPERVISOR;
+  const isSectionHead = () => user?.role === ROLES.SECTION_HEAD;
+  const isSupervisorOrSectionHead = () => isSupervisor() || isSectionHead();
 
   return (
     <AuthContext.Provider
@@ -61,6 +63,8 @@ export const AuthProvider = ({ children }) => {
         logout,
         isSpecialist,
         isSupervisor,
+        isSectionHead,
+        isSupervisorOrSectionHead,
         loading,
       }}
     >

@@ -1,7 +1,7 @@
 import { useMemo, useRef } from 'react';
 import { useAuth } from '../../../context/AuthContext';
-import { casesStorage, evaluationsStorage } from '../../../data/storage';
-import { GENDER } from '../../../data/constants';
+import { casesStorage } from '../../../data/storage';
+import { GENDER, REFERRAL_SOURCES } from '../../../data/constants';
 import KPICard from '../../../components/charts/KPICard';
 import DonutChart from '../../../components/charts/DonutChart';
 import BarChart from '../../../components/charts/BarChart';
@@ -53,7 +53,7 @@ const Dashboard = () => {
 
   // Referral sources distribution (نسبة التوزيع حسب مصدر الإحالة)
   const referralData = useMemo(() => {
-    const allowedSources = ['المدارس', 'دائرة الأشراف التربوي', 'شؤون الطلبة', 'دائرة التوجيه المهني والإرشاد الطلابي'];
+    const allowedSources = REFERRAL_SOURCES;
     const referralCounts = {};
     cases.forEach((c) => {
       if (c.referralSource && allowedSources.includes(c.referralSource)) {
@@ -81,11 +81,10 @@ const Dashboard = () => {
     let basic = 0;
 
     cases.forEach((c) => {
-      const evalItem = evaluationsStorage.findByCaseId(c.id);
-      // Demo rule:
-      // - If the specialist marked the student "needs intervention plan" => special programs
-      // - Otherwise => basic education system
-      if (evalItem?.needsIndividualSessions === 'نعم') special += 1;
+      // بعد إزالة نموذج التقييم: نستخدم قاعدة تجريبية مستقرة فقط لتمييز البرنامج
+      // (سيتم استبدالها لاحقًا بحقل educationProgram عند إضافته في نموذج الحالة)
+      const specialTypes = ['اضطراب التوحد', 'إعاقة ذهنية', 'متلازمة داون'];
+      if (specialTypes.includes(c.disabilityType)) special += 1;
       else basic += 1;
     });
 
@@ -160,9 +159,10 @@ const Dashboard = () => {
                 ? referralData
                 : [
                     { name: 'المدارس', value: Math.floor(totalCases * 0.4) || 1 },
-                    { name: 'دائرة الأشراف التربوي', value: Math.floor(totalCases * 0.3) || 1 },
-                    { name: 'شؤون الطلبة', value: Math.floor(totalCases * 0.2) || 1 },
-                    { name: 'دائرة التوجيه المهني والإرشاد الطلابي', value: Math.floor(totalCases * 0.1) || 1 },
+                    { name: 'خدمة المراجعين', value: Math.floor(totalCases * 0.22) || 1 },
+                    { name: 'دائرة الإشراف التربوي', value: Math.floor(totalCases * 0.18) || 1 },
+                    { name: 'دائرة التوجيه والإرشاد الطلابي', value: Math.floor(totalCases * 0.12) || 1 },
+                    { name: 'مراكز التأهيل', value: Math.floor(totalCases * 0.08) || 1 },
                   ]
             }
             height={250}

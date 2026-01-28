@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { casesStorage, evaluationsStorage } from '../../../data/storage';
+import { casesStorage } from '../../../data/storage';
 import { GOVERNORATES } from '../../../data/constants';
 import Card from '../../../components/ui/Card';
 import Badge from '../../../components/ui/Badge';
@@ -10,7 +10,6 @@ const CaseDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const caseItem = casesStorage.findById(id);
-  const evaluation = evaluationsStorage.findByCaseId(id);
 
   if (!caseItem) {
     return (
@@ -104,39 +103,6 @@ const CaseDetails = () => {
       <Card title="التوصيات">
         <p className="text-gray-700 whitespace-pre-line">{caseItem.recommendations}</p>
       </Card>
-
-      {evaluation && (
-        <Card title="نتائج التقييم">
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">اسم الأخصائي</p>
-              <p className="font-medium">{evaluation.evaluatorName}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 mb-1">تاريخ التقييم</p>
-              <p className="font-medium">{evaluation.evaluationDate}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 mb-1">التشخيص النهائي</p>
-              <p className="font-medium">{evaluation.finalDiagnosis}</p>
-            </div>
-            {evaluation.diagnosisNotes && (
-              <div>
-                <p className="text-sm text-gray-600 mb-1">ملاحظات</p>
-                <p className="font-medium">{evaluation.diagnosisNotes}</p>
-              </div>
-            )}
-          </div>
-        </Card>
-      )}
-
-      {caseItem.status === 'قيد التقييم' && (
-        <div className="flex justify-end">
-          <Link to={`/portal/specialist/cases/${id}/evaluate`}>
-            <Button variant="primary">بدء التقييم</Button>
-          </Link>
-        </div>
-      )}
     </div>
   );
 };

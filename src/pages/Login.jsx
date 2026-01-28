@@ -30,7 +30,7 @@ const Login = () => {
       // Redirect based on role
       if (result.user.role === ROLES.SPECIALIST) {
         navigate('/portal/specialist/dashboard');
-      } else if (result.user.role === ROLES.SUPERVISOR) {
+      } else if (result.user.role === ROLES.SUPERVISOR || result.user.role === ROLES.SECTION_HEAD) {
         navigate('/portal/supervisor/dashboard');
       }
     } else {
@@ -49,8 +49,8 @@ const Login = () => {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-2xl p-8 relative">
           {/* Close Button */}
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className="absolute top-4 left-4 p-2 text-gray-500 hover:text-[#211551] hover:bg-gray-100 rounded-full transition-colors"
             title="العودة للرئيسية"
           >

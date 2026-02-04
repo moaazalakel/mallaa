@@ -217,3 +217,45 @@ export const notificationsStorage = {
     return notifications.filter((n) => !n.read).length;
   },
 };
+
+export const reportsStorage = {
+  getAll: () => storage.get(STORAGE_KEYS.REPORTS) || [],
+  save: (reports) => storage.set(STORAGE_KEYS.REPORTS, reports),
+  findById: (id) => {
+    const reports = reportsStorage.getAll();
+    return reports.find((r) => r.id === id) || null;
+  },
+  create: (reportData) => {
+    const reports = reportsStorage.getAll();
+    const now = new Date().toISOString();
+    const newReport = {
+      ...reportData,
+      id: reportData.id || `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      createdAt: reportData.createdAt || now,
+      updatedAt: now,
+    };
+    reports.unshift(newReport);
+    reportsStorage.save(reports);
+    return newReport;
+  },
+  update: (id, updates) => {
+    const reports = reportsStorage.getAll();
+    const index = reports.findIndex((r) => r.id === id);
+    if (index !== -1) {
+      reports[index] = {
+        ...reports[index],
+        ...updates,
+        updatedAt: new Date().toISOString(),
+      };
+      reportsStorage.save(reports);
+      return reports[index];
+    }
+    return null;
+  },
+  delete: (id) => {
+    const reports = reportsStorage.getAll();
+    const filtered = reports.filter((r) => r.id !== id);
+    reportsStorage.save(filtered);
+    return filtered.length < reports.length;
+  },
+};

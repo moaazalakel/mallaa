@@ -26,14 +26,19 @@ const CaseDetails = () => {
 
   return (
     <div className="space-y-6" dir="rtl">
-      <div className="flex items-center gap-4">
-        <button onClick={() => navigate(-1)} className="cursor-pointer">
-          <IoArrowBack size={24} className="text-[#211551]" />
-        </button>
-        <div>
-          <h1 className="text-3xl font-bold text-[#211551] mb-2">تفاصيل الحالة</h1>
-          <p className="text-gray-600">معلومات الحالة والتقييمات</p>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate(-1)} className="cursor-pointer">
+            <IoArrowBack size={24} className="text-[#211551]" />
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold text-[#211551] mb-2">تفاصيل الحالة</h1>
+            <p className="text-gray-600">معلومات الحالة والتقييمات</p>
+          </div>
         </div>
+        <Link to={`/portal/specialist/cases/${caseItem.id}/edit`}>
+          <Button variant="outline">تعديل</Button>
+        </Link>
       </div>
 
       <Card title="معلومات الطالب">

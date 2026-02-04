@@ -6,6 +6,7 @@ import Table from '../../../components/ui/Table';
 import Badge from '../../../components/ui/Badge';
 import Select from '../../../components/ui/Select';
 import ExportPdfButton from '../../../components/ui/ExportPdfButton';
+import ExportCsvButton from '../../../components/ui/ExportCsvButton';
 import KPICard from '../../../components/charts/KPICard';
 import RadarChart from '../../../components/charts/RadarChart';
 import BarChart from '../../../components/charts/BarChart';
@@ -49,7 +50,7 @@ const SpecialistsList = () => {
         const cases = allCases.filter((c) => c.governorateId === specialist.governorateId);
         const completedCases = cases.filter((c) => c.status === CASE_STATUS.COMPLETED);
         const audits = allAudits.filter((a) => a.specialistId === specialist.id);
-        
+
         // Calculate KPIs
         // Deterministic fallback jitter per specialist + data counts
         const seedKey = `${specialist.id}|g:${specialist.governorateId}|a:${audits.length}|c:${cases.length}|cc:${completedCases.length}`;
@@ -59,11 +60,11 @@ const SpecialistsList = () => {
         const avgDocScore = audits.length > 0
           ? Math.round(audits.reduce((sum, a) => sum + (a.documentCompletenessScore || 0), 0) / audits.length)
           : clamp(86 + jitter(18));
-        
+
         const avgDiagScore = audits.length > 0
           ? Math.round(audits.reduce((sum, a) => sum + (a.diagnosticQualityScore || 0), 0) / audits.length)
           : clamp(84 + jitter(18));
-        
+
         const avgComplianceScore = audits.length > 0
           ? Math.round(audits.reduce((sum, a) => sum + (a.complianceScore || 0), 0) / audits.length)
           : clamp(88 + jitter(12));
@@ -145,6 +146,27 @@ const SpecialistsList = () => {
     ...GOVERNORATES.map((g) => ({ value: g.id, label: g.name })),
   ];
 
+  const csvHeader = [
+    'اسم الأخصائي',
+    'المحافظة',
+    'عدد الحالات',
+    'دقة التقارير',
+    'دقة الحكم',
+    'زمن الإنجاز (يوم)',
+    'التقييم الكلي',
+  ];
+  const csvRows = useMemo(() => {
+    return filteredSpecialists.map((row) => ([
+      row.name,
+      row.governorate,
+      row.totalCases,
+      `${row.documentScore}%`,
+      `${row.diagnosticScore}%`,
+      row.avgDiagnosisTime,
+      `${row.overallScore}%`,
+    ]));
+  }, [filteredSpecialists]);
+
   return (
     <div className="space-y-6" dir="rtl" ref={exportRef}>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -152,20 +174,27 @@ const SpecialistsList = () => {
           <h1 className="text-3xl font-bold text-[#211551] mb-2">لوحة تقييم ملاءمة فريق التشخيص</h1>
           <p className="text-gray-600">تقييم جودة الأداء عبر المحاور التشخيصية للملاءة التربوية</p>
         </div>
-        <div className="w-full md:w-64">
-          <Select
-            label="تصفية حسب المحافظة"
-            value={selectedGovernorate}
-            onChange={(e) => setSelectedGovernorate(e.target.value)}
-            options={governorateOptions}
+        <div className="w-full md:w-auto flex flex-col md:flex-row gap-3 md:items-end">
+          <div className="w-full md:w-64">
+            <Select
+              label="تصفية حسب المحافظة"
+              value={selectedGovernorate}
+              onChange={(e) => setSelectedGovernorate(e.target.value)}
+              options={governorateOptions}
+            />
+          </div>
+          <ExportPdfButton
+            targetRef={exportRef}
+            fileName={`لوحة-تقييم-ملاءمة-فريق-التشخيص${selectedGovernorate ? `-${GOVERNORATES.find(g=>g.id===selectedGovernorate)?.name || ''}` : ''}.pdf`}
+            className="w-full md:w-auto"
+          />
+          <ExportCsvButton
+            fileName={`لوحة-تقييم-ملاءمة-فريق-التشخيص${selectedGovernorate ? `-${GOVERNORATES.find(g=>g.id===selectedGovernorate)?.name || ''}` : ''}.csv`}
+            header={csvHeader}
+            rows={csvRows}
+            className="w-full md:w-auto"
           />
         </div>
-      </div>
-      <div className="flex justify-start md:justify-end">
-        <ExportPdfButton
-          targetRef={exportRef}
-          fileName={`لوحة-تقييم-ملاءمة-فريق-التشخيص${selectedGovernorate ? `-${GOVERNORATES.find(g=>g.id===selectedGovernorate)?.name || ''}` : ''}.pdf`}
-        />
       </div>
 
       {/* KPI Cards */}
@@ -207,7 +236,9 @@ const SpecialistsList = () => {
 
       {/* Specialists Table */}
       <Card title="تقييم أداء أخصائيي التشخيص (المستوى الفردي)">
-        <Table columns={columns} data={filteredSpecialists} />
+        <div className="max-h-[520px] overflow-auto">
+          <Table columns={columns} data={filteredSpecialists} />
+        </div>
       </Card>
     </div>
   );

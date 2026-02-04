@@ -1,7 +1,7 @@
 import { useMemo, useRef } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { casesStorage } from '../../../data/storage';
-import { GENDER, REFERRAL_SOURCES } from '../../../data/constants';
+import { EDUCATION_PROGRAMS, GENDER, REFERRAL_SOURCES } from '../../../data/constants';
 import KPICard from '../../../components/charts/KPICard';
 import DonutChart from '../../../components/charts/DonutChart';
 import BarChart from '../../../components/charts/BarChart';
@@ -72,26 +72,13 @@ const Dashboard = () => {
   });
   const schoolTypeData = Object.entries(schoolTypeCounts).map(([name, value]) => ({ name, value }));
 
-  // Education system distribution (exact 2 categories as requested)
-  const educationSystemData = useMemo(() => {
-    const SPECIAL_PROGRAMS = 'برامج التربية الخاصة';
-    const BASIC_SYSTEM = 'نظام التعليم الأساسي';
-
-    let special = 0;
-    let basic = 0;
-
+  // Education program distribution (4 categories)
+  const educationProgramData = useMemo(() => {
+    const counts = Object.fromEntries(EDUCATION_PROGRAMS.map((p) => [p, 0]));
     cases.forEach((c) => {
-      // بعد إزالة نموذج التقييم: نستخدم قاعدة تجريبية مستقرة فقط لتمييز البرنامج
-      // (سيتم استبدالها لاحقًا بحقل educationProgram عند إضافته في نموذج الحالة)
-      const specialTypes = ['اضطراب التوحد', 'إعاقة ذهنية', 'متلازمة داون'];
-      if (specialTypes.includes(c.disabilityType)) special += 1;
-      else basic += 1;
+      if (c.educationProgram && counts[c.educationProgram] !== undefined) counts[c.educationProgram] += 1;
     });
-
-    return [
-      { name: SPECIAL_PROGRAMS, value: special },
-      { name: BASIC_SYSTEM, value: basic },
-    ];
+    return Object.entries(counts).map(([name, value]) => ({ name, value }));
   }, [cases]);
 
   // Education stages (based on age) - remove (13-18) to match requested view
@@ -148,7 +135,7 @@ const Dashboard = () => {
 
       {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card title="التوزيع حسب الجنس">
+        <Card title="التوزيع حسب النوع الاجتماعي">
           <DonutChart data={genderData} height={250} />
         </Card>
 
@@ -176,14 +163,16 @@ const Dashboard = () => {
 
       {/* Charts Row 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card title="توزيع حسب نظام التعليم">
+        <Card title="توزيع حسب برنامج التعليم">
           <DonutChart
             data={
-              educationSystemData.some((d) => d.value > 0)
-                ? educationSystemData
+              educationProgramData.some((d) => d.value > 0)
+                ? educationProgramData
                 : [
-                    { name: 'برامج التربية الخاصة', value: 1 },
-                    { name: 'نظام التعليم الأساسي', value: 1 },
+                    { name: 'البرنامج السمعي', value: 1 },
+                    { name: 'البرنامج الفكري', value: 1 },
+                    { name: 'التربية الخاصة', value: 1 },
+                    { name: 'التعليم الأساسي', value: 1 },
                   ]
             }
             height={250}

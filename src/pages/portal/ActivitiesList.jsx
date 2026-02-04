@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { activitiesStorage } from '../../data/storage';
 import { GOVERNORATES } from '../../data/constants';
@@ -8,24 +8,25 @@ import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import Select from '../../components/ui/Select';
 import DatePicker from '../../components/ui/DatePicker';
-import { IoAdd, IoCreateOutline, IoEye } from 'react-icons/io5';
+import { IoAdd } from 'react-icons/io5';
 import { format } from 'date-fns';
 
 const ActivitiesList = () => {
-  const { user, isSupervisor } = useAuth();
+  const { user, isSupervisorOrSectionHead } = useAuth();
+  const navigate = useNavigate();
   const allActivities = activitiesStorage.getAll();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterGovernorate, setFilterGovernorate] = useState('');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
-  const basePath = isSupervisor() ? '/portal/supervisor' : '/portal/specialist';
+  const basePath = isSupervisorOrSectionHead() ? '/portal/supervisor' : '/portal/specialist';
 
   const activities = useMemo(() => {
-    let filtered = isSupervisor()
+    let filtered = isSupervisorOrSectionHead()
       ? allActivities
       : allActivities.filter((a) => a.governorateId === user?.governorateId);
 
-    if (isSupervisor() && filterGovernorate) {
+    if (isSupervisorOrSectionHead() && filterGovernorate) {
       filtered = filtered.filter((a) => a.governorateId === filterGovernorate);
     }
 
@@ -45,7 +46,7 @@ const ActivitiesList = () => {
     }
 
     return filtered.sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
-  }, [allActivities, user?.governorateId, isSupervisor, searchTerm, filterGovernorate, fromDate, toDate]);
+  }, [allActivities, user?.governorateId, isSupervisorOrSectionHead, searchTerm, filterGovernorate, fromDate, toDate]);
 
   const columns = [
     {
@@ -85,27 +86,6 @@ const ActivitiesList = () => {
         </div>
       ),
     },
-    {
-      header: 'إجراء',
-      accessor: 'actions',
-      cellClassName: 'min-w-[180px]',
-      render: (row) => (
-        <div className="flex gap-2">
-          <Link to={`${basePath}/activities/${row.id}/view`}>
-            <Button variant="ghost" size="sm" className="flex items-center gap-1">
-              <IoEye size={16} />
-              عرض
-            </Button>
-          </Link>
-          <Link to={`${basePath}/activities/${row.id}/edit`}>
-            <Button variant="outline" size="sm" className="flex items-center gap-1">
-              <IoCreateOutline size={16} />
-              تعديل
-            </Button>
-          </Link>
-        </div>
-      ),
-    },
   ];
 
   return (
@@ -137,7 +117,7 @@ const ActivitiesList = () => {
             />
           </div>
 
-          {isSupervisor() ? (
+          {isSupervisorOrSectionHead() ? (
             <Select
               label="المحافظة"
               value={filterGovernorate}
@@ -174,7 +154,7 @@ const ActivitiesList = () => {
             <Button
               type="button"
               variant="outline"
-              className="w-full h-[44px] !border-gray-300 !text-gray-700 hover:!bg-[#211551] hover:!text-white hover:!border-[#211551]"
+              className="w-full h-[44px] border-gray-300! text-gray-700! hover:bg-[#211551]! hover:text-white! hover:border-[#211551]!"
               onClick={() => {
                 setSearchTerm('');
                 setFilterGovernorate('');
@@ -187,7 +167,13 @@ const ActivitiesList = () => {
           </div>
         </div>
 
-        <Table columns={columns} data={activities} />
+        <div className="max-h-[520px] overflow-auto">
+          <Table
+            columns={columns}
+            data={activities}
+            onRowClick={(row) => navigate(`${basePath}/activities/${row.id}/view`)}
+          />
+        </div>
         <div className="mt-4 text-sm text-gray-600">
           إجمالي الأنشطة: {activities.length}
         </div>

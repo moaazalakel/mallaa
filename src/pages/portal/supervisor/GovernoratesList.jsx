@@ -6,6 +6,7 @@ import Table from '../../../components/ui/Table';
 import Badge from '../../../components/ui/Badge';
 import Select from '../../../components/ui/Select';
 import ExportPdfButton from '../../../components/ui/ExportPdfButton';
+import ExportCsvButton from '../../../components/ui/ExportCsvButton';
 import RadarChart from '../../../components/charts/RadarChart';
 import BarChart from '../../../components/charts/BarChart';
 
@@ -33,7 +34,7 @@ const mulberry32 = (a) => {
 const GovernoratesList = () => {
   const exportRef = useRef(null);
   const [selectedGovernorate, setSelectedGovernorate] = useState('');
-  
+
   const allCases = casesStorage.getAll();
   const allUsers = usersStorage.getAll();
   const allActivities = activitiesStorage.getAll();
@@ -58,9 +59,9 @@ const GovernoratesList = () => {
       const diagScore = clamp(Math.round(66 + completionRate * 0.22 + Math.min(18, completedCases.length * 1.5) + jitter(8)));
       const speedScore = clamp(Math.round(60 + completionRate * 0.15 + jitter(10)));
       const complianceScore = clamp(Math.round(70 + completionRate * 0.12 + jitter(8)));
-      
+
       const overallScore = Math.round((completionRate + docScore + diagScore + speedScore + complianceScore) / 5);
-      
+
       return {
         id: gov.id,
         name: gov.name,
@@ -170,6 +171,19 @@ const GovernoratesList = () => {
     ...GOVERNORATES.map(g => ({ value: g.id, label: g.name }))
   ];
 
+  const csvHeader = ['المحافظة', 'إجمالي الحالات', 'الحالات المكتملة', 'نسبة الإكمال', 'الأخصائي', 'الأنشطة', 'التقييم العام'];
+  const csvRows = useMemo(() => {
+    return filteredStats.map((row) => ([
+      row.name,
+      row.totalCases,
+      row.completedCases,
+      `${row.completionRate}%`,
+      row.specialist,
+      row.activities,
+      `${row.overallScore}%`,
+    ]));
+  }, [filteredStats]);
+
   // KPI Card Component
   const KPIBox = ({ title, value, color = 'primary' }) => {
     const colorClasses = {
@@ -179,7 +193,7 @@ const GovernoratesList = () => {
       info: 'bg-blue-500 text-white',
       purple: 'bg-purple-600 text-white',
     };
-    
+
     return (
       <div className={`${colorClasses[color]} rounded-lg p-4 text-center shadow-md`}>
         <p className="text-3xl font-bold mb-1">{value}%</p>
@@ -208,6 +222,12 @@ const GovernoratesList = () => {
           <ExportPdfButton
             targetRef={exportRef}
             fileName={`لوحة-تقييم-الملاءة-على-مستوى-المحافظات${selectedGovernorate ? `-${GOVERNORATES.find(g=>g.id===selectedGovernorate)?.name || ''}` : ''}.pdf`}
+            className="w-full md:w-auto"
+          />
+          <ExportCsvButton
+            fileName={`لوحة-تقييم-الملاءة-على-مستوى-المحافظات${selectedGovernorate ? `-${GOVERNORATES.find(g=>g.id===selectedGovernorate)?.name || ''}` : ''}.csv`}
+            header={csvHeader}
+            rows={csvRows}
             className="w-full md:w-auto"
           />
         </div>
@@ -245,7 +265,9 @@ const GovernoratesList = () => {
 
       {/* Governorates Table */}
       <Card title="جدول المحافظات">
-        <Table columns={columns} data={filteredStats} />
+        <div className="max-h-[520px] overflow-auto">
+          <Table columns={columns} data={filteredStats} />
+        </div>
       </Card>
     </div>
   );

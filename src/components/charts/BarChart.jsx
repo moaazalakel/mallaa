@@ -45,7 +45,7 @@ const BarChart = ({
     const verticalPadding = 10; // breathing room
     const availableHeight = Math.max(120, height - axisHeight - verticalPadding);
     const count = Math.max(1, safeData.length);
-    const rowHeight = Math.max(22, Math.floor(availableHeight / count));
+    const rowHeight = Math.max(28, Math.floor(availableHeight / count));
     const barHeight = Math.max(14, Math.min(22, rowHeight - 8));
 
     return (
@@ -59,12 +59,12 @@ const BarChart = ({
           return (
             <div
               key={`${item?.[nameKey] ?? index}`}
-              className="flex items-center gap-3"
-              style={{ height: rowHeight }}
+              className="flex items-start gap-3"
+              style={{ minHeight: rowHeight }}
             >
               {/* Bar (to the left), grows from right-to-left */}
               <div
-                className="flex-1 bg-gray-100 rounded relative overflow-hidden"
+                className="flex-1 min-w-0 bg-gray-100 rounded relative overflow-hidden shrink-0"
                 style={{ height: barHeight }}
               >
                 {showGrid && (
@@ -84,9 +84,9 @@ const BarChart = ({
                 </span>
               </div>
 
-              {/* Label (outside, on the right) */}
+              {/* Label (outside, on the right) – full text, wrap up to 2 lines */}
               <div
-                className="w-44 text-right text-sm text-gray-700 font-medium truncate"
+                className="min-w-52 max-w-60 text-right text-sm text-gray-700 font-medium leading-snug wrap-break-word line-clamp-2"
                 title={item?.[nameKey]}
               >
                 {item?.[nameKey]}
@@ -107,7 +107,7 @@ const BarChart = ({
               <div className="absolute right-3/4 top-3 text-xs text-gray-500 -translate-x-1/2">75</div>
               <div className="absolute left-0 top-3 text-xs text-gray-500">100</div>
             </div>
-            <div className="w-44" />
+            <div className="min-w-52 max-w-60" />
           </div>
         )}
       </div>
@@ -126,8 +126,8 @@ const BarChart = ({
         margin={{ top: 5, right: 20, left: 0, bottom: bottomMargin }}
       >
         {showGrid && <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />}
-        <XAxis 
-          dataKey={nameKey} 
+        <XAxis
+          dataKey={nameKey}
           tick={{ fill: '#374151', fontSize: 10 }}
           axisLine={false}
           tickLine={false}
@@ -136,15 +136,15 @@ const BarChart = ({
           interval={0}
           height={xHeight}
         />
-        <YAxis 
+        <YAxis
           tick={{ fill: '#6b7280', fontSize: 11 }}
           axisLine={false}
           tickLine={false}
         />
         <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(33, 21, 81, 0.1)' }} />
-        <Bar 
-          dataKey={dataKey} 
-          fill={barColor} 
+        <Bar
+          dataKey={dataKey}
+          fill={barColor}
           radius={[4, 4, 0, 0]}
           maxBarSize={40}
           animationDuration={1000}

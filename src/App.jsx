@@ -17,6 +17,7 @@ import SpecialistDashboard from './pages/portal/specialist/Dashboard';
 import CasesList from './pages/portal/specialist/CasesList';
 import NewCase from './pages/portal/specialist/NewCase';
 import CaseDetails from './pages/portal/specialist/CaseDetails';
+import AuditCaseReview from './pages/portal/AuditCaseReview';
 import SupervisorDashboard from './pages/portal/supervisor/Dashboard';
 import AuditForm from './pages/portal/supervisor/AuditForm';
 import AuditCases from './pages/portal/supervisor/AuditCases';
@@ -27,6 +28,8 @@ import LeadershipDashboard from './pages/portal/supervisor/LeadershipDashboard';
 import ActivitiesList from './pages/portal/ActivitiesList';
 import NewActivity from './pages/portal/NewActivity';
 import ActivityView from './pages/portal/ActivityView';
+import ReportsList from './pages/portal/supervisor/ReportsList';
+import PeriodicReportBuilder from './pages/portal/supervisor/PeriodicReportBuilder';
 import { ROLES } from './data/constants';
 
 // Initialize seed data on app load
@@ -65,6 +68,7 @@ function App() {
                   <Route path="cases/:id" element={<CaseDetails />} />
                   <Route path="cases/:id/edit" element={<NewCase />} />
                   <Route path="audit" element={<AuditCases />} />
+                  <Route path="audit/:id" element={<AuditCaseReview />} />
                   <Route path="activities" element={<ActivitiesList />} />
                   <Route path="activities/new" element={<NewActivity />} />
                   <Route path="activities/:id/view" element={<ActivityView />} />
@@ -89,12 +93,16 @@ function App() {
                   <Route path="specialists" element={<SpecialistsList />} />
                   <Route path="specialists/:id" element={<Placeholder title="تفاصيل الأخصائي" />} />
                   <Route path="audit" element={<AuditCases />} />
+                  <Route path="audit/:id" element={<AuditCaseReview />} />
                   <Route path="cases/:id/view" element={<SupervisorCaseView />} />
                   <Route path="cases/:id/audit" element={<AuditForm />} />
                   <Route path="activities" element={<ActivitiesList />} />
                   <Route path="activities/new" element={<NewActivity />} />
                   <Route path="activities/:id/view" element={<ActivityView />} />
                   <Route path="activities/:id/edit" element={<NewActivity />} />
+                  <Route path="reports" element={<ReportsList />} />
+                  <Route path="reports/periodic/new" element={<PeriodicReportBuilder mode="new" />} />
+                  <Route path="reports/periodic/:id" element={<PeriodicReportBuilder mode="edit" />} />
                 </Routes>
               </PortalLayout>
             </ProtectedRoute>

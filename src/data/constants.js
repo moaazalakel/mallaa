@@ -43,10 +43,10 @@ export const REFERRAL_SOURCES = [
 
 // Education Programs (for dashboard #3)
 export const EDUCATION_PROGRAMS = [
-  'التعليم الأساسي',
-  'التربية الخاصة',
-  'البرنامج الفكري',
   'البرنامج السمعي',
+  'البرنامج الفكري',
+  'التربية الخاصة',
+  'التعليم الأساسي',
 ];
 
 // Inclusion Type (for trends comparison)
@@ -88,6 +88,7 @@ export const STORAGE_KEYS = {
   CASES: 'mallaa_cases',
   AUDITS: 'mallaa_audits',
   ACTIVITIES: 'mallaa_activities',
+  REPORTS: 'mallaa_reports',
   CURRENT_USER: 'mallaa_current_user',
   NOTIFICATIONS: 'mallaa_notifications',
   INITIALIZED: 'mallaa_initialized',
@@ -107,7 +108,7 @@ export const CHART_COLORS = {
   gray: '#6B7280',
 };
 
-// Governance KPIs (8 axes)
+// Governance KPIs (legacy 8 axes – kept for backward compatibility if needed)
 export const GOVERNANCE_AXES = [
   'جودة التشخيص',
   'دقة التوصيات',
@@ -117,4 +118,15 @@ export const GOVERNANCE_AXES = [
   'التدريب والتطوير',
   'الالتزام بالمعايير',
   'جودة التقارير',
+];
+
+// محاور ومعايير القياس الرئيسية (منهجيات القياس) – 7 محاور
+export const MEASUREMENT_AXES = [
+  'التحضير والاستعداد المهني',
+  'جودة أدوات القياس المستخدمة',
+  'دقة التحليل والتفسير',
+  'جودة التوصيات والتقارير',
+  'التوثيق والحوكمة',
+  'التواصل المهني مع الأطراف ذات الصلة',
+  'التطوير المستمر والتعلم الذاتي',
 ];

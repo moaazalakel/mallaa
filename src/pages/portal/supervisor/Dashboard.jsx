@@ -37,7 +37,7 @@ import { format, subMonths } from 'date-fns';
 
 const Dashboard = () => {
   const exportRef = useRef(null);
-  const { user, isSectionHead } = useAuth();
+  const { isSectionHead } = useAuth();
 
   const allCasesData = casesStorage.getAll();
   const allUsers = usersStorage.getAll();
@@ -57,25 +57,25 @@ const Dashboard = () => {
     };
   }, [fromDate, selectedDisabilityType, selectedGovernorateId, toDate]);
 
-  const parseISODate = (value) => {
-    if (!value) return null;
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return null;
-    return d;
-  };
-
-  const isWithinRange = (dateValue) => {
-    const d = parseISODate(dateValue);
-    if (!d) return false;
-    const from = parseISODate(filters.fromDate);
-    const to = parseISODate(filters.toDate);
-    if (from && d < from) return false;
-    if (to && d > to) return false;
-    return true;
-  };
-
   const filteredCases = useMemo(() => {
     let filtered = [...allCasesData];
+
+    const parseISODate = (value) => {
+      if (!value) return null;
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return null;
+      return d;
+    };
+
+    const isWithinRange = (dateValue) => {
+      const d = parseISODate(dateValue);
+      if (!d) return false;
+      const from = parseISODate(filters.fromDate);
+      const to = parseISODate(filters.toDate);
+      if (from && d < from) return false;
+      if (to && d > to) return false;
+      return true;
+    };
 
     if (filters.selectedGovernorateId) {
       filtered = filtered.filter((c) => c.governorateId === filters.selectedGovernorateId);
@@ -253,16 +253,16 @@ const Dashboard = () => {
     };
   };
 
-  const axisScoreFromAudit = (audit, caseId, axisKey) => {
-    const note = (audit?.professionalAxesNotes?.[axisKey] || '').trim();
-    const seed = `${caseId}|${axisKey}|${note.length}`;
-    const rand = mulberry32(hashString(seed));
-    const jitter = Math.round((rand() - 0.5) * 12); // -6..+6
-    const base = note ? 72 + Math.min(22, Math.round(note.length / 8)) : 65;
-    return clamp(base + jitter);
-  };
-
   const governorateAxisAverages = useMemo(() => {
+    const axisScoreFromAudit = (audit, caseId, axisKey) => {
+      const note = (audit?.professionalAxesNotes?.[axisKey] || '').trim();
+      const seed = `${caseId}|${axisKey}|${note.length}`;
+      const rand = mulberry32(hashString(seed));
+      const jitter = Math.round((rand() - 0.5) * 12); // -6..+6
+      const base = note ? 72 + Math.min(22, Math.round(note.length / 8)) : 65;
+      return clamp(base + jitter);
+    };
+
     const auditsByCaseId = new Map(allAudits.map((a) => [a.caseId, a]));
     return GOVERNORATES.map((g) => {
       const cases = filteredCases.filter((c) => c.governorateId === g.id);
@@ -392,7 +392,7 @@ const Dashboard = () => {
     <div className="space-y-6" dir="rtl" ref={exportRef}>
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-[#211551] mb-2">لوحة المؤشرات الثالثة: لوحة المتابعة الإحصائية لمؤشرات الملاءة</h1>
+          <h1 className="text-3xl font-bold text-[#211551] mb-2">لوحة المتابعة الإحصائية لمؤشرات الملاءة</h1>
           <p className="text-gray-600">
             متابعة إحصائية لمؤشرات الملاءة
             {filters.selectedGovernorateId ? <span className="text-[#211551] font-bold"> - {selectedGovName}</span> : null}
@@ -462,23 +462,23 @@ const Dashboard = () => {
       {/* 2️⃣ + 3️⃣ */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card title="توزيع الطلبة حسب النوع الاجتماعي">
-          <DonutChart data={genderData} height={300} innerRadius={0} outerRadius={95} />
+          <DonutChart data={genderData} height={250} />
         </Card>
         <Card title="البنية التعليمية الداعمة">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="border border-gray-100 rounded-lg p-4 bg-gray-50/50">
-              <p className="text-sm text-gray-600 mb-1">عدد المدارس الحكومية</p>
-              <p className="text-2xl font-bold text-[#211551]">{educationStructure.publicCount}</p>
-            </div>
-            <div className="border border-gray-100 rounded-lg p-4 bg-gray-50/50">
-              <p className="text-sm text-gray-600 mb-1">عدد المدارس الخاصة</p>
-              <p className="text-2xl font-bold text-[#211551]">{educationStructure.privateCount}</p>
-            </div>
-            <div className="border border-gray-100 rounded-lg p-4 bg-gray-50/50">
-              <p className="text-sm text-gray-600 mb-1">مدارس الدمج / التربية الخاصة</p>
-              <p className="text-2xl font-bold text-[#211551]">{educationStructure.inclusionOrSpecialCount}</p>
-            </div>
-          </div>
+          <ul className="space-y-2 list-disc list-inside text-gray-800">
+            <li className="flex justify-between gap-4">
+              <span>عدد المدارس الحكومية</span>
+              <span className="font-bold text-[#211551]">{educationStructure.publicCount}</span>
+            </li>
+            <li className="flex justify-between gap-4">
+              <span>عدد المدارس الخاصة</span>
+              <span className="font-bold text-[#211551]">{educationStructure.privateCount}</span>
+            </li>
+            <li className="flex justify-between gap-4">
+              <span>مدارس الدمج / التربية الخاصة</span>
+              <span className="font-bold text-[#211551]">{educationStructure.inclusionOrSpecialCount}</span>
+            </li>
+          </ul>
         </Card>
       </div>
 
@@ -528,7 +528,9 @@ const Dashboard = () => {
       {/* 9️⃣ (لرئيس القسم فقط) */}
       {isSectionHead() ? (
         <Card title="جدول الدرجات التفصيلية (للمحللين فقط)">
-          <Table columns={detailedTableColumns} data={governorateAxisAverages} />
+          <div className="max-h-[420px] overflow-auto">
+            <Table columns={detailedTableColumns} data={governorateAxisAverages} />
+          </div>
         </Card>
       ) : null}
 
@@ -556,20 +558,22 @@ const Dashboard = () => {
       {/* Drill-down target table */}
       <div ref={refCasesTable}>
         <Card title="تفاصيل الحالات (Drill Down)">
-          <Table
-            columns={[
-              { header: 'رقم الحالة', accessor: 'id' },
-              { header: 'اسم الطالب', accessor: 'studentName' },
-              { header: 'المحافظة', accessor: 'governorateId', render: (row) => GOVERNORATES.find((g) => g.id === row.governorateId)?.name || '—' },
-              { header: 'تاريخ التسجيل', accessor: 'createdAt', render: (row) => (row.createdAt ? format(new Date(row.createdAt), 'yyyy-MM-dd') : '—') },
-              { header: 'نوع الإعاقة', accessor: 'disabilityType' },
-              { header: 'برنامج التعليم', accessor: 'educationProgram' },
-              { header: 'نوع الدمج', accessor: 'inclusionType' },
-              { header: 'مصدر الإحالة', accessor: 'referralSource' },
-              { header: 'حالة الحالة', accessor: 'status' },
-            ]}
-            data={filteredCases.slice(0, 50)}
-          />
+          <div className="max-h-[520px] overflow-auto">
+            <Table
+              columns={[
+                { header: 'رقم الحالة', accessor: 'id' },
+                { header: 'اسم الطالب', accessor: 'studentName' },
+                { header: 'المحافظة', accessor: 'governorateId', render: (row) => GOVERNORATES.find((g) => g.id === row.governorateId)?.name || '—' },
+                { header: 'تاريخ التسجيل', accessor: 'createdAt', render: (row) => (row.createdAt ? format(new Date(row.createdAt), 'yyyy-MM-dd') : '—') },
+                { header: 'نوع الإعاقة', accessor: 'disabilityType' },
+                { header: 'برنامج التعليم', accessor: 'educationProgram' },
+                { header: 'نوع الدمج', accessor: 'inclusionType' },
+                { header: 'مصدر الإحالة', accessor: 'referralSource' },
+                { header: 'حالة الحالة', accessor: 'status' },
+              ]}
+              data={filteredCases.slice(0, 50)}
+            />
+          </div>
           <div className="mt-3 text-xs text-gray-500">
             يتم عرض أول 50 حالة فقط للحفاظ على سرعة الواجهة.
           </div>

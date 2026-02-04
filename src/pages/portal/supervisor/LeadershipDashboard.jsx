@@ -11,7 +11,7 @@ import {
   Legend,
 } from 'recharts';
 import { casesStorage, auditsStorage, activitiesStorage } from '../../../data/storage';
-import { CHART_COLORS, GOVERNANCE_AXES, GOVERNORATES, AUDIT_DECISIONS, CASE_STATUS } from '../../../data/constants';
+import { CHART_COLORS, MEASUREMENT_AXES, GOVERNORATES, AUDIT_DECISIONS, CASE_STATUS } from '../../../data/constants';
 import Card from '../../../components/ui/Card';
 import BarChart from '../../../components/charts/BarChart';
 import RadarChart from '../../../components/charts/RadarChart';
@@ -130,10 +130,10 @@ const LeadershipDashboard = () => {
     return values.map((v) => ({ ...v, value: Number(v.value.toFixed(1)) }));
   }, [kpis.maturity]);
 
+  // محاور ومعايير القياس الرئيسية (منهجيات القياس) – 7 محاور
   const axesMaturity = useMemo(() => {
-    // Map our 8 axes to a 0–5 maturity score
     const base = 3.0 + Math.min(1.4, kpis.maturity / 100);
-    return GOVERNANCE_AXES.map((axis, idx) => {
+    return MEASUREMENT_AXES.map((axis, idx) => {
       const drift = (idx % 3 === 0 ? 0.4 : idx % 3 === 1 ? 0.15 : -0.05);
       const v = Math.min(5, Math.max(2.2, base + drift));
       return { name: axis, value: Number(v.toFixed(1)) };
@@ -141,15 +141,15 @@ const LeadershipDashboard = () => {
   }, [kpis.maturity]);
 
   const topTeamsRadar = useMemo(() => {
-    // Percent scale for radar
-    return [
-      { name: 'جودة التشخيص', value: Math.min(98, kpis.maturity + 6) },
-      { name: 'اكتمال المستندات', value: Math.min(96, kpis.completionRate + 8) },
-      { name: 'دقة التوصيات', value: Math.min(95, kpis.approvalRate + 2) },
-      { name: 'الالتزام بالمعايير', value: Math.min(96, kpis.teamEfficiency + 4) },
-      { name: 'سرعة الإنجاز', value: Math.min(92, 100 - (kpis.avgCycleDays * 2)) },
-    ];
-  }, [kpis]);
+    // نفس المحاور السبعة – ترتيب مختلف للرادار فقط (تبديل الموضعين 0 و 5 لتقليل تداخل التسميات)
+    const base = Math.min(96, kpis.maturity + 4);
+    const data = MEASUREMENT_AXES.map((axis, idx) => {
+      const drift = (idx % 3 === 0 ? 6 : idx % 3 === 1 ? 2 : -2);
+      return { name: axis, value: Math.min(98, Math.max(70, base + drift)) };
+    });
+    [data[0], data[5]] = [data[5], data[0]];
+    return data;
+  }, [kpis.maturity]);
 
   const governorateChip = useMemo(() => {
     // Mini label list similar to the screenshot context
@@ -272,7 +272,7 @@ const LeadershipDashboard = () => {
 
       <h2 className="text-xl font-bold text-[#211551]">3. لوحة الأداء التفصيلي (محاور الجودة والنضج)</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card title="مستوى النضج حسب محاور الملاءة الثمانية">
+        <Card title="مستوى النضج حسب محاور الملاءة السبعة">
           <BarChart
             data={axesMaturity}
             dataKey="value"

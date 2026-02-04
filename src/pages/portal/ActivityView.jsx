@@ -11,10 +11,10 @@ import { IoArrowBack } from 'react-icons/io5';
 const ActivityView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, isSupervisor } = useAuth();
+  const { user, isSupervisorOrSectionHead } = useAuth();
   const activity = useMemo(() => activitiesStorage.getAll().find((a) => a.id === id) || null, [id]);
 
-  const basePath = isSupervisor() ? '/portal/supervisor' : '/portal/specialist';
+  const basePath = isSupervisorOrSectionHead() ? '/portal/supervisor' : '/portal/specialist';
 
   if (!activity) {
     return (
@@ -28,7 +28,7 @@ const ActivityView = () => {
   }
 
   // Specialist can only view their governorate activities
-  if (!isSupervisor() && activity.governorateId !== user?.governorateId) {
+  if (!isSupervisorOrSectionHead() && activity.governorateId !== user?.governorateId) {
     return (
       <div className="text-center py-12" dir="rtl">
         <p className="text-gray-600">غير مسموح بعرض هذا النشاط</p>
@@ -40,17 +40,25 @@ const ActivityView = () => {
   }
 
   const govName = GOVERNORATES.find((g) => g.id === activity.governorateId)?.name || 'غير محدد';
+  const canEdit = isSupervisorOrSectionHead() || activity.governorateId === user?.governorateId;
 
   return (
     <div className="space-y-6" dir="rtl">
-      <div className="flex items-center gap-4">
-        <button onClick={() => navigate(-1)} className="cursor-pointer">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate(-1)} className="cursor-pointer">
           <IoArrowBack size={24} className="text-[#211551]" />
-        </button>
-        <div>
-          <h1 className="text-3xl font-bold text-[#211551] mb-2">عرض النشاط (قراءة فقط)</h1>
-          <p className="text-gray-600">تفاصيل النشاط كما تم تسجيلها</p>
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold text-[#211551] mb-2">عرض النشاط</h1>
+            <p className="text-gray-600">تفاصيل النشاط كما تم تسجيلها</p>
+          </div>
         </div>
+        {canEdit && (
+          <Link to={`${basePath}/activities/${activity.id}/edit`}>
+            <Button variant="outline">تعديل</Button>
+          </Link>
+        )}
       </div>
 
       <Card title="معلومات النشاط">

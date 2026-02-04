@@ -11,7 +11,7 @@ import Card from '../../components/ui/Card';
 import { IoArrowBack } from 'react-icons/io5';
 
 const NewActivity = () => {
-  const { user, isSupervisor } = useAuth();
+  const { user, isSupervisorOrSectionHead } = useAuth();
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = Boolean(id);
@@ -28,7 +28,7 @@ const NewActivity = () => {
     title: '',
     description: '',
     activityDate: new Date().toISOString().split('T')[0],
-    governorateId: isSupervisor() ? '' : user?.governorateId || '',
+    governorateId: isSupervisorOrSectionHead() ? '' : user?.governorateId || '',
   });
 
   useEffect(() => {
@@ -36,28 +36,28 @@ const NewActivity = () => {
     if (!existingActivity) return;
 
     // Simple permission guard: specialist can only edit their governorate activities
-    if (!isSupervisor() && existingActivity.governorateId !== user?.governorateId) return;
+    if (!isSupervisorOrSectionHead() && existingActivity.governorateId !== user?.governorateId) return;
 
     setFormData({
       title: existingActivity.title || '',
       description: existingActivity.description || '',
       activityDate: existingActivity.activityDate || new Date().toISOString().split('T')[0],
-      governorateId: existingActivity.governorateId || (isSupervisor() ? '' : user?.governorateId || ''),
+      governorateId: existingActivity.governorateId || (isSupervisorOrSectionHead() ? '' : user?.governorateId || ''),
     });
-  }, [existingActivity, isEdit, isSupervisor, user?.governorateId]);
+  }, [existingActivity, isEdit, isSupervisorOrSectionHead, user?.governorateId]);
 
   if (isEdit && !existingActivity) {
     return (
       <div className="text-center py-12" dir="rtl">
         <p className="text-gray-600">النشاط غير موجود</p>
-        <Link to={`${isSupervisor() ? '/portal/supervisor' : '/portal/specialist'}/activities`}>
+        <Link to={`${isSupervisorOrSectionHead() ? '/portal/supervisor' : '/portal/specialist'}/activities`}>
           <Button variant="primary" className="mt-4">العودة إلى الأنشطة</Button>
         </Link>
       </div>
     );
   }
 
-  if (isEdit && existingActivity && !isSupervisor() && existingActivity.governorateId !== user?.governorateId) {
+  if (isEdit && existingActivity && !isSupervisorOrSectionHead() && existingActivity.governorateId !== user?.governorateId) {
     return (
       <div className="text-center py-12" dir="rtl">
         <p className="text-gray-600">غير مسموح بتعديل هذا النشاط</p>
@@ -80,7 +80,7 @@ const NewActivity = () => {
     if (!formData.title.trim()) newErrors.title = 'العنوان مطلوب';
     if (!formData.description.trim()) newErrors.description = 'الوصف مطلوب';
     if (!formData.activityDate) newErrors.activityDate = 'تاريخ النشاط مطلوب';
-    if (isSupervisor() && !formData.governorateId) {
+    if (isSupervisorOrSectionHead() && !formData.governorateId) {
       newErrors.governorateId = 'المنطقة مطلوبة';
     }
 
@@ -109,11 +109,9 @@ const NewActivity = () => {
     }
 
     setLoading(false);
-    const basePath = isSupervisor() ? '/portal/supervisor' : '/portal/specialist';
+    const basePath = isSupervisorOrSectionHead() ? '/portal/supervisor' : '/portal/specialist';
     navigate(`${basePath}/activities`);
   };
-
-  const basePath = isSupervisor() ? '/portal/supervisor' : '/portal/specialist';
 
   return (
     <div className="space-y-6" dir="rtl">
@@ -129,7 +127,7 @@ const NewActivity = () => {
 
       <Card>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {isSupervisor() && (
+          {isSupervisorOrSectionHead() && (
             <Select
               label="المنطقة *"
               value={formData.governorateId}

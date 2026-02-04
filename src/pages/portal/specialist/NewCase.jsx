@@ -127,9 +127,16 @@ const NewCase = () => {
       // If this case was already reviewed, mark central review as "needs follow-up"
       const existingReview = auditsStorage.findByCaseId(id);
       if (existingReview) {
+        const nowIso = new Date().toISOString();
         auditsStorage.update(existingReview.id, {
           reviewStatus: 'تحتاج متابعة',
           reviewCloseDate: '',
+          followUp: {
+            reason: 'تم تعديل بيانات الحالة من قبل الأخصائي بعد تنفيذ المراجعة/التقويم المركزي.',
+            updatedAt: nowIso,
+            updatedByUserId: user?.id || null,
+            updatedByName: user?.name || '',
+          },
         });
       }
 

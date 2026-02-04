@@ -1,7 +1,9 @@
-const Table = ({ columns, data, onRowClick, className = '' }) => {
+const Table = ({ columns, data, onRowClick, className = '', fit = false }) => {
   return (
     <div className={`overflow-x-auto ${className}`} dir="rtl">
-      <table className="min-w-full divide-y divide-gray-200">
+      <table
+        className={`divide-y divide-gray-200 ${fit ? 'table-fixed w-full' : 'min-w-full'}`}
+      >
         <thead className="bg-gray-50">
           <tr>
             {columns.map((column, index) => (

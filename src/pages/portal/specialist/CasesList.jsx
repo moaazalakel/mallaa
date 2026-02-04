@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { casesStorage } from '../../../data/storage';
 import { CASE_STATUS } from '../../../data/constants';
@@ -8,10 +8,11 @@ import Badge from '../../../components/ui/Badge';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Card from '../../../components/ui/Card';
-import { IoAdd, IoSearch } from 'react-icons/io5';
+import { IoAdd } from 'react-icons/io5';
 
 const CasesList = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const allCases = casesStorage.getAll();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -69,17 +70,6 @@ const CasesList = () => {
       accessor: 'status',
       render: (row) => getStatusBadge(row.status),
     },
-    {
-      header: 'الإجراءات',
-      accessor: 'actions',
-      render: (row) => (
-        <div className="flex gap-2">
-          <Link to={`/portal/specialist/cases/${row.id}/edit`}>
-            <Button size="sm" variant="outline">تعديل</Button>
-          </Link>
-        </div>
-      ),
-    },
   ];
 
   return (
@@ -116,7 +106,13 @@ const CasesList = () => {
           </select>
         </div>
 
-        <Table columns={columns} data={cases} />
+        <div className="max-h-[520px] overflow-auto">
+          <Table
+            columns={columns}
+            data={cases}
+            onRowClick={(row) => navigate(`/portal/specialist/cases/${row.id}`)}
+          />
+        </div>
         <div className="mt-4 text-sm text-gray-600">
           إجمالي الحالات: {cases.length}
         </div>

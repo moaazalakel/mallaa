@@ -550,7 +550,7 @@ const AuditCases = () => {
           <p className="text-gray-600">
             {isSpecialist()
               ? 'عرض مؤشرات وتقويمات الحالات (قراءة فقط)'
-              : 'متابعة تقويم الحالات وتقييم أداء الأخصائيين من شاشة واحدة'}
+              : 'متابعة تقويم الحالات التشخيصية وتقييم الأداء المهني للأخصائيين'}
           </p>
         </div>
         <div className="w-full md:w-auto flex flex-col md:flex-row gap-3 md:items-end">

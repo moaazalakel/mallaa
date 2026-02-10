@@ -22,7 +22,6 @@ import SupervisorDashboard from './pages/portal/supervisor/Dashboard';
 import AuditForm from './pages/portal/supervisor/AuditForm';
 import AuditCases from './pages/portal/supervisor/AuditCases';
 import GovernoratesList from './pages/portal/supervisor/GovernoratesList';
-import SpecialistsList from './pages/portal/supervisor/SpecialistsList';
 import SupervisorCaseView from './pages/portal/supervisor/CaseView';
 import LeadershipDashboard from './pages/portal/supervisor/LeadershipDashboard';
 import ActivitiesList from './pages/portal/ActivitiesList';
@@ -90,8 +89,8 @@ function App() {
                   <Route path="leadership" element={<LeadershipDashboard />} />
                   <Route path="governorates" element={<GovernoratesList />} />
                   <Route path="governorates/:id" element={<Placeholder title="تفاصيل المحافظة" />} />
-                  <Route path="specialists" element={<SpecialistsList />} />
-                  <Route path="specialists/:id" element={<Placeholder title="تفاصيل الأخصائي" />} />
+                  <Route path="specialists" element={<Navigate to="/portal/supervisor/audit" replace />} />
+                  <Route path="specialists/:id" element={<Navigate to="/portal/supervisor/audit" replace />} />
                   <Route path="audit" element={<AuditCases />} />
                   <Route path="audit/:id" element={<AuditCaseReview />} />
                   <Route path="cases/:id/view" element={<SupervisorCaseView />} />

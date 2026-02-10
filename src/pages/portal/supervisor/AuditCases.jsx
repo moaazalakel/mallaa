@@ -11,6 +11,7 @@ import Select from '../../../components/ui/Select';
 import DatePicker from '../../../components/ui/DatePicker';
 import ExportPdfButton from '../../../components/ui/ExportPdfButton';
 import ExportCsvButton from '../../../components/ui/ExportCsvButton';
+import SpecialistsList from './SpecialistsList';
 import { format } from 'date-fns';
 
 const AuditCases = () => {
@@ -383,61 +384,6 @@ const AuditCases = () => {
     if (!validSpecialistIds.has(filterSpecialistId)) setFilterSpecialistId('');
   }, [isSectionHead, filterCentralReviewerId, filterSpecialistId, specialistOptionsFiltered]);
 
-  const specialistPerfRows = useMemo(() => {
-    const anyFilterActive = Boolean(
-      filterGovernorateId ||
-        filterSpecialistId ||
-        filterStatus ||
-        filterFromDate ||
-        filterToDate ||
-        (isSectionHead() && filterCentralReviewerId)
-    );
-
-    const filteredCaseIds = new Set(filteredCases.map((c) => c.id));
-    const auditByCaseId = new Map(
-      allAudits.filter((a) => filteredCaseIds.has(a.caseId)).map((a) => [a.caseId, a])
-    );
-
-    const rows = specialists.map((s) => {
-      const govName = s.governorateName || getGovernorateName(s.governorateId);
-      const casesForGov = filteredCases.filter((c) => c.governorateId === s.governorateId);
-      const auditsForGov = casesForGov.map((c) => auditByCaseId.get(c.id)).filter(Boolean);
-      const casesCount = casesForGov.length;
-      const reviewedCount = auditsForGov.length;
-      const closedCount = auditsForGov.filter((a) => a.reviewStatus === 'مكتملة').length;
-      return {
-        id: s.id,
-        specialistName: s.name,
-        governorateName: govName,
-        casesCount,
-        reviewedCount,
-        closedCount,
-      };
-    });
-
-    return anyFilterActive ? rows.filter((r) => r.casesCount > 0) : rows;
-  }, [
-    allAudits,
-    filteredCases,
-    specialists,
-    getGovernorateName,
-    filterGovernorateId,
-    filterSpecialistId,
-    filterStatus,
-    filterFromDate,
-    filterToDate,
-    filterCentralReviewerId,
-    isSectionHead,
-  ]);
-
-  const specialistPerfColumns = [
-    { header: 'اسم الأخصائي', accessor: 'specialistName' },
-    { header: 'المحافظة', accessor: 'governorateName' },
-    { header: 'عدد الحالات المسجلة', accessor: 'casesCount' },
-    { header: 'عدد الحالات التي تمت مراجعتها مركزيًا', accessor: 'reviewedCount' },
-    { header: 'عدد الحالات المغلقة', accessor: 'closedCount' },
-  ];
-
   const csvHeader = useMemo(() => {
     return [
       'رقم الحالة',
@@ -494,40 +440,8 @@ const AuditCases = () => {
     isSupervisor,
   ]);
 
-  return (
-    <div className="space-y-6" dir="rtl" ref={exportRef}>
-      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-[#211551] mb-2">
-            {isSectionHead()
-              ? 'تقويم الكفاءة المهنية لأخصائيين التشخيص المركزيين'
-              : isSupervisor()
-              ? 'تقويم الكفاءة المهنية لأخصائيين التشخيص اللامركزيين'
-              : 'تقويم الكفاءة المهنية لأخصائيين التشخيص'}
-          </h1>
-          <p className="text-gray-600">
-            {isSpecialist()
-              ? 'عرض مؤشرات وتقويمات الحالات (قراءة فقط)'
-              : isSupervisor()
-              ? 'إدخال تقويم الحالة التشخيصية وبيانات المراجعة المركزية'
-              : 'تقويم أداء المراجع المركزي وإضافة ملاحظات إشرافية'}
-          </p>
-        </div>
-        <div className="w-full md:w-auto flex flex-col md:flex-row gap-3 md:items-end">
-          <ExportPdfButton
-            targetRef={exportRef}
-            fileName="لوحة-المؤشرات-الثانية-تقويم-الكفاءة-المهنية.pdf"
-            className="w-full md:w-auto"
-          />
-          <ExportCsvButton
-            fileName="تقويم-الكفاءة-المهنية-قائمة-الحالات.csv"
-            header={csvHeader}
-            rows={csvRows}
-            className="w-full md:w-auto"
-          />
-        </div>
-      </div>
-
+  const casesEvaluationContent = (
+    <div className="space-y-6">
       {/* Filter Bar */}
       <Card>
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -621,13 +535,45 @@ const AuditCases = () => {
         </div>
         <div className="mt-4 text-sm text-gray-600">إجمالي الحالات: {filteredCases.length}</div>
       </Card>
+    </div>
+  );
+
+  return (
+    <div className="space-y-6" dir="rtl" ref={exportRef}>
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-[#211551] mb-2">
+            {isSupervisor() || isSectionHead()
+              ? 'تقويم الكفاءة المهنية للأخصائيين'
+              : 'تقويم الكفاءة المهنية لأخصائيين التشخيص'}
+          </h1>
+          <p className="text-gray-600">
+            {isSpecialist()
+              ? 'عرض مؤشرات وتقويمات الحالات (قراءة فقط)'
+              : 'متابعة تقويم الحالات وتقييم أداء الأخصائيين من شاشة واحدة'}
+          </p>
+        </div>
+        <div className="w-full md:w-auto flex flex-col md:flex-row gap-3 md:items-end">
+          <ExportPdfButton
+            targetRef={exportRef}
+            fileName="لوحة-المؤشرات-الثانية-تقويم-الكفاءة-المهنية.pdf"
+            className="w-full md:w-auto"
+          />
+          <ExportCsvButton
+            fileName="تقويم-الكفاءة-المهنية-قائمة-الحالات.csv"
+            header={csvHeader}
+            rows={csvRows}
+            className="w-full md:w-auto"
+          />
+        </div>
+      </div>
+
+      {casesEvaluationContent}
 
       {isSpecialist() ? null : (
-        <Card title="جدول عرض أداء الأخصائيين (وصفي تجميعي)">
-          <div className="max-h-[420px] overflow-auto">
-            <Table columns={specialistPerfColumns} data={specialistPerfRows} />
-          </div>
-        </Card>
+        <div className="pt-2">
+          <SpecialistsList />
+        </div>
       )}
     </div>
   );

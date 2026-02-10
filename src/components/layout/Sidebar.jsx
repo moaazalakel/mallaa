@@ -10,8 +10,6 @@ import {
   IoAddCircle,
   IoClipboardOutline,
   IoClipboard,
-  IoPeopleOutline,
-  IoPeople,
   IoBarChartOutline,
   IoBarChart,
   IoCalendarOutline,
@@ -33,8 +31,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     { to: '/portal/supervisor/dashboard', label: 'لوحة التحكم', icon: IoHomeOutline, activeIcon: IoHome },
     { to: '/portal/supervisor/leadership', label: 'لوحة القيادة', icon: IoBarChartOutline, activeIcon: IoBarChart },
     { to: '/portal/supervisor/governorates', label: 'تقييم المحافظات', icon: IoBarChartOutline, activeIcon: IoBarChart },
-    { to: '/portal/supervisor/specialists', label: 'تقييم الأخصائيين', icon: IoPeopleOutline, activeIcon: IoPeople },
-    { to: '/portal/supervisor/audit', label: 'تقويم الكفاءة المهنية', icon: IoClipboardOutline, activeIcon: IoClipboard },
+    { to: '/portal/supervisor/audit', label: 'تقويم الكفاءة المهنية للأخصائيين', icon: IoClipboardOutline, activeIcon: IoClipboard },
     { to: '/portal/supervisor/reports', label: 'التقارير الدورية', icon: IoDocumentTextOutline, activeIcon: IoDocumentText },
     { to: '/portal/supervisor/activities', label: 'الأنشطة', icon: IoCalendarOutline, activeIcon: IoCalendar },
   ];
